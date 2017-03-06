@@ -1,0 +1,19 @@
+{
+  "name": "piera",
+  "version": "1.0.0",
+  "description": "piera servers",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/danielbauman1010/PieraServer.git"
+  },
+  "author": "Daniel Bauman",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/danielbauman1010/PieraServer/issues"
+  },
+  "homepage": "https://github.com/danielbauman1010/PieraServer#readme"
+}
