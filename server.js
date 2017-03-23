@@ -1,19 +1,34 @@
+//Dependencies:
 var express=require('express')
 var bodyParser=require('body-parser')
-var app = express()
+var fs = require('fs')
+var http = require('http')
+var https = require('https')
+var server = express()
 
-app.use(bodyParser.json())
+server.use(bodyParser.json())
 
 
-app.get('/',function(req,res) {
+//SSL:
+//openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days XXX
+var pass = 'Piera123'
+var sslOptions = {
+  key: fs.readFileSync('key.pem'),
+  cert: fs.readFileSync('cert.pem'),
+  passphrase: pass
+};
+
+server.get('/',function(req,res) {
   console.log('request made.')
   res.end("This works.")
 })
 
-app.post('/createuser', function(req,res) {
+server.post('/createuser', function(req,res) {
   console.log(req.body)
-  res.end("User recieved.")
+  res.header("Content-Type",'serverlication/json');
+  res.send(JSON.stringify(req.body, null, 4));
 })
 
 
-app.listen(3000)
+http.createServer(server).listen(3000)
+https.createServer(sslOptions, server).listen(8000)
