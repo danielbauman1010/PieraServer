@@ -11,12 +11,10 @@ server.use(express.static('public'))
 
 //SSL:
 //openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days XXX
-var pass = 'Piera123'
-/*var sslOptions = {
-  key: fs.readFileSync('key.pem'),
-  cert: fs.readFileSync('cert.pem'),
-  passphrase: pass
-};*/
+var sslOptions = {
+  key: fs.readFileSync('/etc/letsencrypt/keys/0000_key-certbot.pem'),
+  cert: fs.readFileSync('/etc/letsencrypt/csr/0000_csr-certbot.pem')
+};
 
 server.get('/',function(req,res) {
   console.log('request made.')
@@ -35,4 +33,4 @@ server.post('/createuser', function(req,res) {
 
 
 http.createServer(server).listen(80)
-//https.createServer(sslOptions, server).listen(443)
+https.createServer(sslOptions, server).listen(443)
