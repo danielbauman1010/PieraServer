@@ -12,8 +12,9 @@ server.use(express.static('public'))
 //SSL:
 //openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days XXX
 var sslOptions = {
-  key: fs.readFileSync('/etc/letsencrypt/keys/0000_key-certbot.pem'),
-  cert: fs.readFileSync('/etc/letsencrypt/csr/0000_csr-certbot.pem')
+  key: fs.readFileSync('/etc/letsencrypt/live/www.piera.tk/privkey.pem'),
+  cert: fs.readFileSync('/etc/letsencrypt/live/www.piera.tk/fullchain.pem'),
+  ca: fs.readFileSync('/etc/letsencrypt/live/www.piera.tk/chain.pem')
 };
 
 server.get('/',function(req,res) {
