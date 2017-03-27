@@ -60,7 +60,7 @@ server.post('/createuser', function(req,res) {
 
 server.post('/login', function(req, res) {
   console.log(req.body);
-  var loginData = JSON.parse(req.body);
+  var loginData = req.body;
   const userLogedIn = login(loginData.username, loginData.password);
   if(userLogedIn == 0){
     const err = {"loginStatus": 0};
