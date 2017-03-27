@@ -21,9 +21,9 @@ class User {
 }
 
 var users = [];
-function login(username, password) {
+function login(email, password) {
   for(user in users) {
-    if(users[user].username == username && users[user].password == password) {
+    if(users[user].email.localeCompare(email) == 0 && users[user].password.localeCompare(password) == 0) {
       return user;
     }
   }
@@ -45,7 +45,7 @@ server.get('/',function(req,res) {
 
 server.post('/createuser', function(req,res) {
   console.log(req.body);
-  var userData = JSON.parse(req.body);
+  var userData = req.body;
   var classesArr = []
   for(category in userData) {
     if(category.includes("class")) {
@@ -60,13 +60,13 @@ server.post('/createuser', function(req,res) {
 
 server.post('/login', function(req, res) {
   console.log(req.body);
-  var loginData = JSON.parse(req.body);
-  const userLogedIn = login(loginData.username, loginData.password);
+  var loginData = req.body;
+  const userLogedIn = login(loginData.email, loginData.password);
   if(userLogedIn == 0){
-    const err = {"loginStatus": 0};
+    const err = {"loginStatus": "0"};
     res.send(JSON.stringify(err, null, 4));
   } else {
-    var response = {"username": userLogedIn.username, "password": userLogedIn.password, "email": userLogedIn.email, "bio": userLogedIn.bio, "typeOfUser": userLogedIn.typeOfUser};
+    var response = {"username": userLogedIn.username, "password": userLogedIn.password, "email": userLogedIn.email, "bio": userLogedIn.bio, "typeOfUser": userLogedIn.typeOfUser, "loginStatus": "1"};
     var counter = 0;
     for(c in userLogedIn.classesEnrolled) {
       response["class"+counter] = userLogedIn.classesEnrolled[c];
