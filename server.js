@@ -21,9 +21,9 @@ class User {
 }
 
 var users = [];
-function login(username, password) {
+function login(email, password) {
   for(user in users) {
-    if(users[user].username == username && users[user].password == password) {
+    if(users[user].email == email && users[user].password == password) {
       return user;
     }
   }
@@ -61,7 +61,7 @@ server.post('/createuser', function(req,res) {
 server.post('/login', function(req, res) {
   console.log(req.body);
   var loginData = req.body;
-  const userLogedIn = login(loginData.username, loginData.password);
+  const userLogedIn = login(loginData.email, loginData.password);
   if(userLogedIn == 0){
     const err = {"loginStatus": 0};
     res.send(JSON.stringify(err, null, 4));
