@@ -45,7 +45,7 @@ server.get('/',function(req,res) {
 
 server.post('/createuser', function(req,res) {
   console.log(req.body);
-  var userData = JSON.parse(req.body);
+  var userData = req.body;
   var classesArr = []
   for(category in userData) {
     if(category.includes("class")) {
