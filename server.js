@@ -63,10 +63,10 @@ server.post('/login', function(req, res) {
   var loginData = req.body;
   const userLogedIn = login(loginData.email, loginData.password);
   if(userLogedIn == 0){
-    const err = {"loginStatus": 0};
+    const err = {"loginStatus": "0"};
     res.send(JSON.stringify(err, null, 4));
   } else {
-    var response = {"username": userLogedIn.username, "password": userLogedIn.password, "email": userLogedIn.email, "bio": userLogedIn.bio, "typeOfUser": userLogedIn.typeOfUser};
+    var response = {"username": userLogedIn.username, "password": userLogedIn.password, "email": userLogedIn.email, "bio": userLogedIn.bio, "typeOfUser": userLogedIn.typeOfUser, "loginStatus": "1"};
     var counter = 0;
     for(c in userLogedIn.classesEnrolled) {
       response["class"+counter] = userLogedIn.classesEnrolled[c];
