@@ -23,7 +23,7 @@ class User {
 var users = [];
 function login(email, password) {
   for(user in users) {
-    if(users[user].email == email && users[user].password == password) {
+    if(users[user].email.localeCompare(email) == 0 && users[user].password.localeCompare(password) == 0) {
       return user;
     }
   }
