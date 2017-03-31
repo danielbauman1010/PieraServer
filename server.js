@@ -60,6 +60,7 @@ server.post('/createuser', function(req,res) {
 
 server.post('/login', function(req, res) {
   console.log(req.body);
+  console.log(users);
   var loginData = req.body;
   const userLogedIn = login(loginData.email, loginData.password);
   if(userLogedIn == 0){
