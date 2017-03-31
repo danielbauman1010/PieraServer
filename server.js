@@ -24,7 +24,7 @@ var users = [];
 function login(email, password) {
   for(user in users) {
     if(users[user].email.localeCompare(email) == 0 && users[user].password.localeCompare(password) == 0) {
-      return user;
+      return users[user];
     }
   }
   return 0;
@@ -60,6 +60,7 @@ server.post('/createuser', function(req,res) {
 
 server.post('/login', function(req, res) {
   console.log(req.body);
+  console.log(users);
   var loginData = req.body;
   const userLogedIn = login(loginData.email, loginData.password);
   if(userLogedIn == 0){
