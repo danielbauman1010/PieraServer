@@ -36,8 +36,12 @@ class Teacher {
   }
 }
 
-var teachers = [];
-var students = [];
+var teachers = {};
+var students = {};
+
+var studentUCodes = {"1234": "MIT", "5678": "Harvard"}
+var teacherUCodes = {"4321": "MIT", "8765": "Harvard"}
+
 function loginTeacher(email, password) {
   for(teacher in teachers) {
     if(teachers[teacher].email.localeCompare(email) == 0 && teachers[teacher].password.localeCompare(password) == 0) {
@@ -73,10 +77,15 @@ server.post('/createstudent', function(req,res) {
   console.log(req.body);
   console.log("creating student")
   var studentData = req.body;
-  const newStudent = new Student(studentData.username, studentData.password, studentData.email, studentData.bio, studentData.classesEnrolled, studentData.interests);
-  students.push(newStudent);
-  var response = {"userId": ""+newStudent.userId, "username": newStudent.username, "password": newStudent.password, "email": newStudent.email, "bio": newStudent.bio, "interests": newStudent.interests, "classesEnrolled": newStudent.classesEnrolled, "loginStatus": "1"};
-  console.log(response)
+  var response;
+  if(studentData.ucode in studentUCodes) {
+    const newStudent = new Student(studentData.username, studentData.password, studentData.email, studentData.bio, studentData.classesEnrolled, studentData.interests);
+    students[newStudent.userId] = studentUCodes[studentData.ucode]
+    response = {"userId": ""+newStudent.userId, "username": newStudent.username, "password": newStudent.password, "email": newStudent.email, "bio": newStudent.bio, "interests": newStudent.interests, "classesEnrolled": newStudent.classesEnrolled, "createStatus": "1"};
+    console.log(response)
+  } else {
+    response = {"createStatus": "0"}
+  }
   res.header("Content-Type",'application/json');
   res.send(JSON.stringify(response, null, 4));
 });
@@ -84,9 +93,14 @@ server.post('/createstudent', function(req,res) {
 server.post('/createteacher', function(req,res) {
   console.log(req.body);
   var teacherData = req.body;
-  const newTeacher = new Teacher(teacherData.username, teacherData.password, teacherData.email, teacherData.bio, teacherData.classesEnrolled);
-  teachers.push(newTeacher);
-  var response = {"userId": ""+newTeacher.userId, "username": newTeacher.username, "password": newTeacher.password, "email": newTeacher.email, "bio": newTeacher.bio, "classesEnrolled": newTeacher.classesEnrolled, "loginStatus": "1"};
+  var response;
+  if(teacherData.ucode in teacherUCodes) {
+    const newTeacher = new Teacher(teacherData.username, teacherData.password, teacherData.email, teacherData.bio, teacherData.classesEnrolled);
+    teachers[newTeacher.userId] = teacherUCodes[teacherData.ucode]
+    response = {"userId": ""+newTeacher.userId, "username": newTeacher.username, "password": newTeacher.password, "email": newTeacher.email, "bio": newTeacher.bio, "classesEnrolled": newTeacher.classesEnrolled, "createStatus": "1"};
+  } else {
+    response = {"createStatus": "0"}
+  }
   res.header("Content-Type",'application/json');
   res.send(JSON.stringify(response, null, 4));
 })
