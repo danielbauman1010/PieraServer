@@ -86,7 +86,7 @@ server.post('/createteacher', function(req,res) {
   var teacherData = req.body;
   const newTeacher = new Teacher(teacherData.username, teacherData.password, teacherData.email, teacherData.bio, teacherData.classesEnrolled);
   teachers.push(newTeacher);
-  var response = {"userId": newTeacher.userId, "username": newTeacher.username, "password": newTeacher.password, "email": newTeacher.email, "bio": newTeacher.bio, "classesEnrolled": newTeacher.classesEnrolled, "loginStatus": "1"};
+  var response = {"userId": ""+newTeacher.userId, "username": newTeacher.username, "password": newTeacher.password, "email": newTeacher.email, "bio": newTeacher.bio, "classesEnrolled": newTeacher.classesEnrolled, "loginStatus": "1"};
   res.header("Content-Type",'application/json');
   res.send(JSON.stringify(response, null, 4));
 })
@@ -100,7 +100,7 @@ server.post('/loginstudent', function(req, res) {
     res.header("Content-Type",'application/json');
     res.send(JSON.stringify(err, null, 4));
   } else {
-    var response = {"userId": student.userId, "username": student.username, "password": student.password, "email": student.email, "bio": student.bio, "interests": student.interests, "classesEnrolled": student.classesEnrolled, "loginStatus": "1"};
+    var response = {"userId": ""+student.userId, "username": student.username, "password": student.password, "email": student.email, "bio": student.bio, "interests": student.interests, "classesEnrolled": student.classesEnrolled, "loginStatus": "1"};
     res.header("Content-Type",'application/json');
     res.send(JSON.stringify(response, null, 4));
   }
@@ -115,7 +115,7 @@ server.post('/loginteacher', function(req, res) {
     res.header("Content-Type",'application/json');
     res.send(JSON.stringify(err, null, 4));
   } else {
-    var response = {"userId": teacher.userId, "username": teacher.username, "password": teacher.password, "email": teacher.email, "bio": teacher.bio, "classesEnrolled": teacher.classesEnrolled, "loginStatus": "1"};
+    var response = {"userId": ""+teacher.userId, "username": teacher.username, "password": teacher.password, "email": teacher.email, "bio": teacher.bio, "classesEnrolled": teacher.classesEnrolled, "loginStatus": "1"};
     res.header("Content-Type",'application/json');
     res.send(JSON.stringify(response, null, 4));
   }
