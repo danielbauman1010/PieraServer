@@ -74,7 +74,7 @@ server.post('/createstudent', function(req,res) {
   var studentData = req.body;
   const newStudent = new Student(studentData.username, studentData.password, studentData.email, studentData.bio, studentData.classesEnrolled, studentData.interests);
   students.push(newStudent);
-  var response = {"userId": newStudent.userId, "username": newStudent.username, "password": newStudent.password, "email": newStudent.email, "bio": newStudent.bio, "interests": newStudent.interests, "loginStatus": "1"};
+  var response = {"userId": newStudent.userId, "username": newStudent.username, "password": newStudent.password, "email": newStudent.email, "bio": newStudent.bio, "interests": newStudent.interests, "classesEnrolled": newStudent.classesEnrolled, "loginStatus": "1"};
   res.header("Content-Type",'application/json');
   res.send(JSON.stringify(response, null, 4));
 });
@@ -84,7 +84,7 @@ server.post('/createteacher', function(req,res) {
   var teacherData = req.body;
   const newTeacher = new Teacher(teacherData.username, teacherData.password, teacherData.email, teacherData.bio, teacherData.classesEnrolled);
   teachers.push(newTeacher);
-  var response = {"userId": newTeacher.userId, "username": newTeacher.username, "password": newTeacher.password, "email": newTeacher.email, "bio": newTeacher.bio, "loginStatus": "1"};
+  var response = {"userId": newTeacher.userId, "username": newTeacher.username, "password": newTeacher.password, "email": newTeacher.email, "bio": newTeacher.bio, "classesEnrolled": newTeacher.classesEnrolled, "loginStatus": "1"};
   res.header("Content-Type",'application/json');
   res.send(JSON.stringify(response, null, 4));
 })
