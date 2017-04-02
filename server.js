@@ -76,6 +76,7 @@ server.post('/createstudent', function(req,res) {
   const newStudent = new Student(studentData.username, studentData.password, studentData.email, studentData.bio, studentData.classesEnrolled, studentData.interests);
   students.push(newStudent);
   var response = {"userId": newStudent.userId, "username": newStudent.username, "password": newStudent.password, "email": newStudent.email, "bio": newStudent.bio, "interests": newStudent.interests, "classesEnrolled": newStudent.classesEnrolled, "loginStatus": "1"};
+  console.log(response)
   res.header("Content-Type",'application/json');
   res.send(JSON.stringify(response, null, 4));
 });
