@@ -41,7 +41,8 @@ var students = {};
 
 var studentUCodes = {"1234": "MIT", "5678": "Harvard"}
 var teacherUCodes = {"4321": "MIT", "8765": "Harvard"}
-
+var studentsUniversity = {}
+var teachersUniversity = {}
 function loginTeacher(email, password) {
   for(teacher in teachers) {
     if(teachers[teacher].email.localeCompare(email) == 0 && teachers[teacher].password.localeCompare(password) == 0) {
@@ -80,7 +81,8 @@ server.post('/createstudent', function(req,res) {
   var response;
   if(studentData.ucode in studentUCodes) {
     const newStudent = new Student(studentData.username, studentData.password, studentData.email, studentData.bio, studentData.classesEnrolled, studentData.interests);
-    students[newStudent.userId] = studentUCodes[studentData.ucode]
+    students[newStudent.userId] = newStudent
+    studentsUniversity[newStudent.userId] = studentUCodes[studentData.ucode]
     response = {"userId": ""+newStudent.userId, "username": newStudent.username, "password": newStudent.password, "email": newStudent.email, "bio": newStudent.bio, "interests": newStudent.interests, "classesEnrolled": newStudent.classesEnrolled, "createStatus": "1"};
     console.log(response)
   } else {
@@ -96,7 +98,8 @@ server.post('/createteacher', function(req,res) {
   var response;
   if(teacherData.ucode in teacherUCodes) {
     const newTeacher = new Teacher(teacherData.username, teacherData.password, teacherData.email, teacherData.bio, teacherData.classesEnrolled);
-    teachers[newTeacher.userId] = teacherUCodes[teacherData.ucode]
+    teachers[newTeacher.userId] = newTeacher
+    teachersUniversity[newTeacher.userId] = teacherUCodes[teacherData.ucode]
     response = {"userId": ""+newTeacher.userId, "username": newTeacher.username, "password": newTeacher.password, "email": newTeacher.email, "bio": newTeacher.bio, "classesEnrolled": newTeacher.classesEnrolled, "createStatus": "1"};
   } else {
     response = {"createStatus": "0"}
