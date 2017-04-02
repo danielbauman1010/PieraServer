@@ -9,22 +9,48 @@ var server = express();
 server.use(bodyParser.json());
 server.use(express.static('public'));
 
-class User {
-  constructor(username, password, email, bio, classesEnrolled, typeOfUser) {
+var currentId = 0;
+
+class Student {
+  constructor(username, password, email, bio, classesEnrolled, interests) {
     this.username = username;
     this.password = password;
     this.email = email;
     this.bio = bio;
     this.classesEnrolled = classesEnrolled;
-    this.typeOfUser = typeOfUser;
+    this.interests = interests;
+    this.userId = currentId;
+    currentId = currentId + 1;
   }
 }
 
-var users = [];
-function login(email, password) {
-  for(user in users) {
-    if(users[user].email.localeCompare(email) == 0 && users[user].password.localeCompare(password) == 0) {
-      return users[user];
+class Teacher {
+  constructor(username, password, email, bio, classesEnrolled) {
+    this.username = username;
+    this.password = password;
+    this.email = email;
+    this.bio = bio;
+    this.classesEnrolled = classesEnrolled;
+    this.userId = currentId;
+    currentId = currentId + 1;
+  }
+}
+
+var teachers = [];
+var students = [];
+function loginTeacher(email, password) {
+  for(teacher in teachers) {
+    if(teachers[teacher].email.localeCompare(email) == 0 && teachers[teacher].password.localeCompare(password) == 0) {
+      return teachers[teacher];
+    }
+  }
+  return 0;
+}
+
+function loginStudent(email, password) {
+  for(student in students) {
+    if(students[student].email.localeCompare(email) == 0 && students[student].password.localeCompare(password) == 0) {
+      return students[student];
     }
   }
   return 0;
@@ -43,39 +69,52 @@ server.get('/',function(req,res) {
   res.end("This works.");
 });
 
-server.post('/createuser', function(req,res) {
+server.post('/createstudent', function(req,res) {
   console.log(req.body);
-  var userData = req.body;
-  var classesArr = []
-  for(category in userData) {
-    if(category.includes("class")) {
-      classesArr.push(userData[category]);
-    }
-  }
-  const newUser = new User(userData.username, userData.password, userData.email, userData.bio, classesArr, userData.typeOfUser);
-  users.push(newUser);
-  res.header("Content-Type",'serverlication/json');
-  res.send(JSON.stringify(req.body, null, 4));
+  var studentData = req.body;
+  const newStudent = new Student(studentData.username, studentData.password, studentData.email, studentData.bio, studentData.classesEnrolled, studentData.interests);
+  students.push(newStudent);
+  var response = {"userId": newStudent.userId, "username": newStudent.username, "password": newStudent.password, "email": newStudent.email, "bio": newStudent.bio, "interests": newStudent.interests, "loginStatus": "1"};
+  res.header("Content-Type",'application/json');
+  res.send(JSON.stringify(response, null, 4));
 });
 
-server.post('/login', function(req, res) {
+server.post('/createteacher', function(req,res) {
   console.log(req.body);
-  console.log(users);
+  var teacherData = req.body;
+  const newTeacher = new Teacher(teacherData.username, teacherData.password, teacherData.email, teacherData.bio, teacherData.classesEnrolled);
+  teachers.push(newTeacher);
+  var response = {"userId": newTeacher.userId, "username": newTeacher.username, "password": newTeacher.password, "email": newTeacher.email, "bio": newTeacher.bio, "loginStatus": "1"};
+  res.header("Content-Type",'application/json');
+  res.send(JSON.stringify(response, null, 4));
+})
+
+server.post('/loginstudent', function(req, res) {
+  console.log(req.body);
   var loginData = req.body;
-  const userLogedIn = login(loginData.email, loginData.password);
-  if(userLogedIn == 0){
+  const student = loginStudent(loginData.email, loginData.password);
+  if(student == 0){
     const err = {"loginStatus": "0"};
     res.send(JSON.stringify(err, null, 4));
   } else {
-    var response = {"username": userLogedIn.username, "password": userLogedIn.password, "email": userLogedIn.email, "bio": userLogedIn.bio, "typeOfUser": userLogedIn.typeOfUser, "loginStatus": "1"};
-    var counter = 0;
-    for(c in userLogedIn.classesEnrolled) {
-      response["class"+counter] = userLogedIn.classesEnrolled[c];
-      counter = counter + 1;
-    }
+    var response = {"userId": student.userId, "username": student.username, "password": student.password, "email": student.email, "bio": student.bio, "interests": student.interests, "classesEnrolled": student.classesEnrolled, "loginStatus": "1"};
     res.send(JSON.stringify(response, null, 4));
   }
 });
+
+server.post('/loginteacher', function(req, res) {
+  console.log(req.body);
+  var loginData = req.body;
+  const teacher = loginTeacher(loginData.email, loginData.password);
+  if(teacher == 0){
+    const err = {"loginStatus": "0"};
+    res.send(JSON.stringify(err, null, 4));
+  } else {
+    var response = {"userId": teacher.userId, "username": teacher.username, "password": teacher.password, "email": teacher.email, "bio": teacher.bio, "classesEnrolled": teacher.classesEnrolled, "loginStatus": "1"};
+    res.send(JSON.stringify(response, null, 4));
+  }
+});
+
 
 http.createServer(server).listen(80);
 https.createServer(sslOptions, server).listen(443);
