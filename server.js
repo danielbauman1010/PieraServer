@@ -71,6 +71,7 @@ server.get('/',function(req,res) {
 
 server.post('/createstudent', function(req,res) {
   console.log(req.body);
+  console.log("creating student")
   var studentData = req.body;
   const newStudent = new Student(studentData.username, studentData.password, studentData.email, studentData.bio, studentData.classesEnrolled, studentData.interests);
   students.push(newStudent);
