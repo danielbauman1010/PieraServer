@@ -38,15 +38,15 @@ class Teacher {
 
 class Experiment {
   constructor(expname, time, explocation, descript, objective, maxParticipants, requirements) {
-    self.expid = currentId;
+    this.expid = currentId;
     currentId = currentId + 1;
-    self.expname = expname
-    self.time = time;
-    self.explocation = explocation;
-    self.descript = descript;
-    self.objective = objective;
-    self.maxParticipants = maxParticipants;
-    self.requirements = requirements;
+    this.expname = expname
+    this.time = time;
+    this.explocation = explocation;
+    this.descript = descript;
+    this.objective = objective;
+    this.maxParticipants = maxParticipants;
+    this.requirements = requirements;
   }
 }
 
