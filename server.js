@@ -36,13 +36,28 @@ class Teacher {
   }
 }
 
+class Experiment {
+  constructor(expname, time, explocation, descript, objective, maxParticipants, requirements) {
+    self.expid = currentId;
+    currentId = currentId + 1;
+    self.expname = expname
+    self.time = time;
+    self.explocation = explocation;
+    self.descript = descript;
+    self.objective = objective;
+    self.maxParticipants = maxParticipants;
+    self.requirements = requirements;
+  }
+}
+
 var teachers = {};
 var students = {};
-
-var studentUCodes = {"1234": "MIT", "5678": "Harvard"}
-var teacherUCodes = {"4321": "MIT", "8765": "Harvard"}
-var studentsUniversity = {}
-var teachersUniversity = {}
+var studentUCodes = {"1234": "MIT", "5678": "Harvard"};
+var teacherUCodes = {"4321": "MIT", "8765": "Harvard"};
+var studentsUniversity = {};
+var teachersUniversity = {};
+var experiments = {};
+var teachersExperiments = {}
 function loginTeacher(email, password) {
   for(teacher in teachers) {
     if(teachers[teacher].email.localeCompare(email) == 0 && teachers[teacher].password.localeCompare(password) == 0) {
@@ -137,6 +152,47 @@ server.post('/loginteacher', function(req, res) {
     res.send(JSON.stringify(response, null, 4));
   }
 });
+
+server.post('/createexperiment', function(req,res) {
+  console.log(req.body);
+  var expData = req.body;
+  const newExp = new Experiment(expData.expname, expData.time, expData.explocation, expData.descript, expData.objective, expData.maxParticipants, expData.requirements)
+  var response;
+  if(expData.authorID in teachers) {
+    experiments[newExp.expid] = newExp
+    teachersExperiments[newExp.expid] = expData.authorID
+    console.log(newExp)
+    response = {"author": ""+teachers[expData.authorID].username, "createStatus": "1"}
+  } else {
+    response = {"createStatus": "0"}
+  }
+  res.send(JSON.stringify(response, null, 4));
+})
+
+server.get('/teacherexperiments/:id', function(req,res) {
+  var response = {};
+  var counter = 0;
+  for(experiment in teachersExperiments) {
+    if(teachersExperiments[experiment] == req.params.id) {
+      response["expname"+counter] = experiments[experiment].expname
+      response["time"+counter] = experiments[experiment].time
+      response["explocation"+counter] = experiments[experiment].explocation
+      response["descript"+counter] = experiments[experiment].descript
+      response["objective"+counter] = experiments[experiment].objective
+      response["maxParticipants"+counter] = experiments[experiment].maxParticipants
+      response["requirements"+counter] = experiments[experiment].requirements
+      counter = counter + 1
+    }
+  }
+  if(counter == 0) {
+    response["getStatus"] = "0"
+  } else {
+    response["getStatus"] = "1"
+  }
+  res.send(JSON.stringify(response, null, 4));
+})
+
+
 
 
 http.createServer(server).listen(80);
