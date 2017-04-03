@@ -172,6 +172,9 @@ server.post('/createexperiment', function(req,res) {
 server.get('/teacherexperiments/:id', function(req,res) {
   var response = {};
   var counter = 0;
+  console.log(teachersExperiments)
+  console.log(experiment)
+  console.log(req.params.id)
   for(experiment in teachersExperiments) {
     if(teachersExperiments[experiment] == req.params.id) {
       response["expname"+counter] = experiments[experiment].expname
