@@ -173,7 +173,7 @@ server.get('/teacherexperiments/:id', function(req,res) {
   var response = {};
   var counter = 0;
   console.log(teachersExperiments)
-  console.log(experiment)
+  console.log(experiments)
   console.log(req.params.id)
   for(experiment in teachersExperiments) {
     if(teachersExperiments[experiment] == req.params.id) {
