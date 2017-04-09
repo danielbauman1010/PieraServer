@@ -209,5 +209,5 @@ server.post('/participate', function(req,res) {
   res.send(JSON.stringify(response, null, 4));
 })
 
-http.createServer(server).listen(80);
+//http.createServer(server).listen(80);
 https.createServer(sslOptions, server).listen(443);
