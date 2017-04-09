@@ -202,9 +202,9 @@ server.post('/participate', function(req,res) {
   var response = {};
   if(data.expid in experiments && data.userId in students) {
     experiments[data.expid].participants.push(data.userId);
-    response["participateStatus": "1"];
+    response["participateStatus"] = "1";
   } else {
-    response["participateStatus": "0"];
+    response["participateStatus"] = "0";
   }
   res.send(JSON.stringify(response, null, 4));
 })
