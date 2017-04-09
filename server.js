@@ -47,6 +47,7 @@ class Experiment {
     this.objective = objective;
     this.maxParticipants = maxParticipants;
     this.requirements = requirements;
+    this.participants = [];
   }
 }
 
@@ -162,14 +163,14 @@ server.post('/createexperiment', function(req,res) {
     experiments[newExp.expid] = newExp
     teachersExperiments[newExp.expid] = expData.authorID
     console.log(newExp)
-    response = {"author": ""+teachers[expData.authorID].username, "createStatus": "1"}
+    response = {"author": ""+teachers[expData.authorID].username, "expid": ""+newExp.expid, "createStatus": "1"}
   } else {
     response = {"createStatus": "0"}
   }
   res.send(JSON.stringify(response, null, 4));
 })
 
-server.get('/teacherexperiments/:id', function(req,res) {
+server.get('/teacherexperiments /:id', function(req,res) {
   var response = {};
   var counter = 0;
   console.log(teachersExperiments)
@@ -195,8 +196,18 @@ server.get('/teacherexperiments/:id', function(req,res) {
   res.send(JSON.stringify(response, null, 4));
 })
 
-
-
+server.post('/participate', function(req,res) {
+  console.log(req.body);
+  var data = req.body;
+  var response = {};
+  if(data.expid in experiments && data.userId in students) {
+    experiments[data.expid].participants.push(data.userId);
+    response["participateStatus": "1"];
+  } else {
+    response["participateStatus": "0"];
+  }
+  res.send(JSON.stringify(response, null, 4));
+})
 
 http.createServer(server).listen(80);
 https.createServer(sslOptions, server).listen(443);
