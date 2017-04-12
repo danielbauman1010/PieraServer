@@ -171,21 +171,21 @@ server.post('/createexperiment', function(req,res) {
   res.send(JSON.stringify(response, null, 4));
 })
 
-server.post('/teacherexperiments', function(req,res) {
+server.get('/teacherexperiments/:id', function(req,res) {
   var response = {};
   var counter = 0;
   console.log(teachersExperiments)
   console.log(experiments)
-  console.log(req.body.id)
+  console.log(req.params.id)
   for(experiment in teachersExperiments) {
-    if(teachersExperiments[experiment] == req.body.id) {
-      response["expname"+counter] = experiments[experiment].expname
-      response["time"+counter] = experiments[experiment].time
-      response["explocation"+counter] = experiments[experiment].explocation
-      response["descript"+counter] = experiments[experiment].descript
-      response["objective"+counter] = experiments[experiment].objective
-      response["maxParticipants"+counter] = experiments[experiment].maxParticipants
-      response["requirements"+counter] = experiments[experiment].requirements
+    if(teachersExperiments[experiment] == req.params.id) {
+      response["expname"+counter] = ""+experiments[experiment].expname
+      response["time"+counter] = ""+experiments[experiment].time
+      response["explocation"+counter] = ""+experiments[experiment].explocation
+      response["descript"+counter] = ""+experiments[experiment].descript
+      response["objective"+counter] = ""+experiments[experiment].objective
+      response["maxParticipants"+counter] = ""+experiments[experiment].maxParticipants
+      response["requirements"+counter] = ""+experiments[experiment].requirements
       counter = counter + 1
     }
   }
