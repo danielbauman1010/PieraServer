@@ -167,6 +167,7 @@ server.post('/createexperiment', function(req,res) {
   } else {
     response = {"createStatus": "0"}
   }
+  res.header("Content-Type",'application/json');
   res.send(JSON.stringify(response, null, 4));
 })
 
@@ -193,6 +194,7 @@ server.get('/teacherexperiments/:id', function(req,res) {
   } else {
     response["getStatus"] = "1"
   }
+  res.header("Content-Type",'application/json');
   res.send(JSON.stringify(response, null, 4));
 })
 
@@ -208,6 +210,6 @@ server.post('/participate', function(req,res) {
   }
   res.send(JSON.stringify(response, null, 4));
 })
-  
+
 //http.createServer(server).listen(80);
 https.createServer(sslOptions, server).listen(443);
