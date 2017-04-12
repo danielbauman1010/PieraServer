@@ -171,14 +171,14 @@ server.post('/createexperiment', function(req,res) {
   res.send(JSON.stringify(response, null, 4));
 })
 
-server.get('/teacherexperiments/:id', function(req,res) {
+server.post('/teacherexperiments', function(req,res) {
   var response = {};
   var counter = 0;
   console.log(teachersExperiments)
   console.log(experiments)
-  console.log(req.params.id)
+  console.log(req.body.id)
   for(experiment in teachersExperiments) {
-    if(teachersExperiments[experiment] == req.params.id) {
+    if(teachersExperiments[experiment] == req.body.id) {
       response["expname"+counter] = experiments[experiment].expname
       response["time"+counter] = experiments[experiment].time
       response["explocation"+counter] = experiments[experiment].explocation
