@@ -20,6 +20,7 @@ class Student {
     this.classesEnrolled = classesEnrolled;
     this.interests = interests;
     this.userId = currentId;
+    this.requirements = []
     currentId = currentId + 1;
   }
 }
@@ -59,6 +60,7 @@ var studentsUniversity = {};
 var teachersUniversity = {};
 var experiments = {};
 var teachersExperiments = {}
+
 function loginTeacher(email, password) {
   for(teacher in teachers) {
     if(teachers[teacher].email.localeCompare(email) == 0 && teachers[teacher].password.localeCompare(password) == 0) {
@@ -194,6 +196,27 @@ server.get('/teacherexperiments/:id', function(req,res) {
     response["getStatus"] = "0"
   } else {
     response["getStatus"] = "1"
+  }
+  res.header("Content-Type",'application/json');
+  res.send(JSON.stringify(response, null, 4));
+})
+
+server.get('/requirements', function(req,res) {
+  var response = {"requirements": ""};
+  for(experiment in experiments) {
+    response["requirements"] = response["requirements"] + " " + experiments[experiment].requirements
+  }
+  res.header("Content-Type",'application/json');
+  res.send(JSON.stringify(response, null, 4));
+})
+
+server.post('/updaterequirements', function(req,res) {
+  var response = {};
+  if(req.body.userId in students) {
+    students[req.body.userId].requirements = students[req.body.userId].requirements + " " + req.body.requirements;
+    response["updateStatus"] = "1"
+  } else {
+    response["updateStatus"] = "0"
   }
   res.header("Content-Type",'application/json');
   res.send(JSON.stringify(response, null, 4));
