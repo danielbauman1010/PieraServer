@@ -186,6 +186,7 @@ server.get('/teacherexperiments/:id', function(req,res) {
       response["objective"+counter] = ""+experiments[experiment].objective
       response["maxParticipants"+counter] = ""+experiments[experiment].maxParticipants
       response["requirements"+counter] = ""+experiments[experiment].requirements
+      response["expid"] = ""+experiment
       counter = counter + 1
     }
   }
