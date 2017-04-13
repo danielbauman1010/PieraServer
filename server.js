@@ -20,7 +20,7 @@ class Student {
     this.classesEnrolled = classesEnrolled;
     this.interests = interests;
     this.userId = currentId;
-    this.requirements = []
+    this.requirements = ""
     currentId = currentId + 1;
   }
 }
