@@ -216,7 +216,7 @@ server.get('/requirements', function(req,res) {
 
 server.get('studentrequirements/:id', function(req,res) {
   var response = {"requirements": ""};
-  if(req.params.id in students) {
+  if(req.params.userId in students) {
     response["requirements"] = students[req.params.id].requirements;
     response["getStatus"] = "1";
   } else {
@@ -230,7 +230,7 @@ server.post('/updaterequirements', function(req,res) {
   var response = {};
   if(req.body.userId in students) {
     if(students[req.body.userId].requirements.localeCompare("") == 0) {
-      req.body.requirements
+      students[req.body.userId].requirements = req.body.requirements
     } else {
       students[req.body.userId].requirements = students[req.body.userId].requirements + "," + req.body.requirements;
     }
