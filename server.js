@@ -204,7 +204,7 @@ server.get('/teacherexperiments/:id', function(req,res) {
 server.get('/requirements', function(req,res) {
   var response = {"requirements": ""};
   for(experiment in experiments) {
-    response["requirements"] = response["requirements"] + "," + experiments[experiment].requirements
+    response["requirements"] = experiments[experiment].requirements + response["requirements"] + "," +
   }
   res.header("Content-Type",'application/json');
   res.send(JSON.stringify(response, null, 4));
