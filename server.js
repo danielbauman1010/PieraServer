@@ -204,7 +204,11 @@ server.get('/teacherexperiments/:id', function(req,res) {
 server.get('/requirements', function(req,res) {
   var response = {"requirements": ""};
   for(experiment in experiments) {
-    response["requirements"] = experiments[experiment].requirements + response["requirements"];
+    if(response["requirements"].localeCompare("") == 0) {
+      response["requirements"] = experiments[experiment].requirements
+    } else {
+      response["requirements"] = experiments[experiment].requirements + "," + response["requirements"];
+    }
   }
   res.header("Content-Type",'application/json');
   res.send(JSON.stringify(response, null, 4));
@@ -225,7 +229,11 @@ server.get('studentrequirements/:id', function(req,res) {
 server.post('/updaterequirements', function(req,res) {
   var response = {};
   if(req.body.userId in students) {
-    students[req.body.userId].requirements = students[req.body.userId].requirements + "," + req.body.requirements;
+    if(students[req.body.userId].requirements.localeCompare("") == 0) {
+      req.body.requirements
+    } else {
+      students[req.body.userId].requirements = students[req.body.userId].requirements + "," + req.body.requirements;
+    }
     response["updateStatus"] = "1"
   } else {
     response["updateStatus"] = "0"
