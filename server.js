@@ -215,13 +215,16 @@ server.get('/requirements', function(req,res) {
 })
 
 server.get('studentrequirements/:id', function(req,res) {
+  console.log("Request made requirements")
   var response = {"requirements": ""};
-  if(req.params.userId in students) {
+  console.log(req);
+  if(req.params.id in students) {
     response["requirements"] = students[req.params.id].requirements;
     response["getStatus"] = "1";
   } else {
     response["getStatus"] = "0";
   }
+  console.log(response)
   res.header("Content-Type",'application/json');
   res.send(JSON.stringify(response, null, 4));
 })
