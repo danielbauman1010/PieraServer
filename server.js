@@ -203,6 +203,7 @@ server.get('/teacherexperiments/:id', function(req,res) {
 
 server.get('/requirements', function(req,res) {
   var response = {"requirements": ""};
+  console.log(req)
   for(experiment in experiments) {
     if(response["requirements"].localeCompare("") == 0) {
       response["requirements"] = experiments[experiment].requirements
@@ -210,6 +211,7 @@ server.get('/requirements', function(req,res) {
       response["requirements"] = experiments[experiment].requirements + "," + response["requirements"];
     }
   }
+  console.log(res)
   res.header("Content-Type",'application/json');
   res.send(JSON.stringify(response, null, 4));
 })
@@ -241,6 +243,8 @@ server.post('/updaterequirements', function(req,res) {
   } else {
     response["updateStatus"] = "0"
   }
+  console.log(req)
+  console.log(res)
   res.header("Content-Type",'application/json');
   res.send(JSON.stringify(response, null, 4));
 })
@@ -255,6 +259,7 @@ server.post('/participate', function(req,res) {
   } else {
     response["participateStatus"] = "0";
   }
+  console.log(res)
   res.send(JSON.stringify(response, null, 4));
 })
 
