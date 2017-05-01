@@ -203,7 +203,7 @@ server.get('/teacherexperiments/:id', function(req,res) {
 
 server.get('/requirements', function(req,res) {
   var response = {"requirements": ""};
-  console.log(req)
+  console.log("/requirements request made")
   for(experiment in experiments) {
     if(response["requirements"].localeCompare("") == 0) {
       response["requirements"] = experiments[experiment].requirements
@@ -211,7 +211,7 @@ server.get('/requirements', function(req,res) {
       response["requirements"] = experiments[experiment].requirements + "," + response["requirements"];
     }
   }
-  console.log(res)
+  console.log(res["requirements"])
   res.header("Content-Type",'application/json');
   res.send(JSON.stringify(response, null, 4));
 })
@@ -219,14 +219,15 @@ server.get('/requirements', function(req,res) {
 server.get('studentrequirements/:id', function(req,res) {
   console.log("Request made requirements")
   var response = {"requirements": ""};
-  console.log(req);
+  console.log(console.log(req.params.id));
   if(req.params.id in students) {
     response["requirements"] = students[req.params.id].requirements;
     response["getStatus"] = "1";
   } else {
     response["getStatus"] = "0";
   }
-  console.log(response)
+  console.log(response["requirements"])
+  console.log(response["getStatus"])
   res.header("Content-Type",'application/json');
   res.send(JSON.stringify(response, null, 4));
 })
@@ -243,8 +244,8 @@ server.post('/updaterequirements', function(req,res) {
   } else {
     response["updateStatus"] = "0"
   }
-  console.log(req)
-  console.log(res)
+  console.log('/updaterequirements request made')
+  console.log(res['Update status'])
   res.header("Content-Type",'application/json');
   res.send(JSON.stringify(response, null, 4));
 })
