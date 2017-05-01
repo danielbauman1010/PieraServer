@@ -216,7 +216,7 @@ server.get('/requirements', function(req,res) {
   res.send(JSON.stringify(response, null, 4));
 })
 
-server.get('studentrequirements/:id', function(req,res) {
+server.get('/studentrequirements/:id', function(req,res) {
   console.log("Request made requirements")
   var response = {"requirements": ""};
   console.log(console.log(req.params.id));
