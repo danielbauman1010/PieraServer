@@ -240,12 +240,15 @@ server.post('/updaterequirements', function(req,res) {
     } else {
       students[req.body.userId].requirements = students[req.body.userId].requirements + "," + req.body.requirements;
     }
+    console.log(students[req.body.userId].requirements)
     response["updateStatus"] = "1"
   } else {
     response["updateStatus"] = "0"
   }
   console.log('/updaterequirements request made')
-  console.log(res['Update status'])
+  console.log(res['updateStatus'])
+  console.log(req.body.requirements)
+
   res.header("Content-Type",'application/json');
   res.send(JSON.stringify(response, null, 4));
 })
