@@ -238,7 +238,7 @@ server.post('/updaterequirements', function(req,res) {
     if(students[req.body.userId].requirements.localeCompare("") == 0) {
       students[req.body.userId].requirements = req.body.requirements
     } else {
-      students[req.body.userId].requirements = students[req.body.userId].requirements + "," + req.body.requirements;
+      students[req.body.userId].requirements = req.body.requirements;
     }
     console.log(students[req.body.userId].requirements)
     response["updateStatus"] = "1"
