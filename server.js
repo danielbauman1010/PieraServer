@@ -79,6 +79,17 @@ function loginStudent(email, password) {
   return 0;
 }
 
+
+function listcontains(check,cont) {
+    var result = true;
+    for(i in check) {
+        if(!(i in cont)){
+            result = false;
+        }
+    }
+    return result;
+}
+
 //SSL:
 //openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days XXX
 var sslOptions = {
@@ -249,6 +260,29 @@ server.post('/updaterequirements', function(req,res) {
   console.log(res['updateStatus'])
   console.log(req.body.requirements)
 
+  res.header("Content-Type",'application/json');
+  res.send(JSON.stringify(response, null, 4));
+})
+
+server.get('/searchforexperiments/:userId', function(req,res){
+  response = {}
+  if(req.params.userId in students) {
+    for(experiment in experiments) {
+      if(listcontains(experiments[experiment].requirements, students[req.params.userId].requirements)){
+        response["expname"+counter] = ""+experiments[experiment].expname
+        response["time"+counter] = ""+experiments[experiment].time
+        response["explocation"+counter] = ""+experiments[experiment].explocation
+        response["descript"+counter] = ""+experiments[experiment].descript
+        response["objective"+counter] = ""+experiments[experiment].objective
+        response["maxParticipants"+counter] = ""+experiments[experiment].maxParticipants
+        response["requirements"+counter] = ""+experiments[experiment].requirements
+        response["expid"] = ""+experiment
+        response["searchStatus"] = '1'
+      }
+    }
+  } else {
+    response['searchStatus'] = '0'
+  }
   res.header("Content-Type",'application/json');
   res.send(JSON.stringify(response, null, 4));
 })
