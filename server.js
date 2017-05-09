@@ -269,15 +269,19 @@ server.get('/searchforexperiments/:userId', function(req,res){
   if(req.params.userId in students) {
     for(experiment in experiments) {
       if(listcontains(experiments[experiment].requirements, students[req.params.userId].requirements)){
-        response["expname"+counter] = ""+experiments[experiment].expname
-        response["time"+counter] = ""+experiments[experiment].time
-        response["explocation"+counter] = ""+experiments[experiment].explocation
-        response["descript"+counter] = ""+experiments[experiment].descript
-        response["objective"+counter] = ""+experiments[experiment].objective
-        response["maxParticipants"+counter] = ""+experiments[experiment].maxParticipants
-        response["requirements"+counter] = ""+experiments[experiment].requirements
+        response["expname"] = ""+experiments[experiment].expname
+        response["time"] = ""+experiments[experiment].time
+        response["explocation"] = ""+experiments[experiment].explocation
+        response["descript"] = ""+experiments[experiment].descript
+        response["objective"] = ""+experiments[experiment].objective
+        response["maxParticipants"] = ""+experiments[experiment].maxParticipants
+        response["requirements"] = ""+experiments[experiment].requirements
         response["expid"] = ""+experiment
+	authorId = teachersExperiments[experiment]
+	response["authorId"] = ""+teachersExperiments[experiment]
         response["searchStatus"] = '1'
+	response["author"] = teachers[teachersExperiments[experiment]].username+""
+
       }
     }
   } else {
