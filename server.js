@@ -277,11 +277,9 @@ server.get('/searchforexperiments/:userId', function(req,res){
         response["maxParticipants"] = ""+experiments[experiment].maxParticipants
         response["requirements"] = ""+experiments[experiment].requirements
         response["expid"] = ""+experiment
-	authorId = teachersExperiments[experiment]
-	response["authorId"] = ""+teachersExperiments[experiment]
+	      response["authorId"] = ""+teachersExperiments[experiment]
         response["searchStatus"] = '1'
-	response["author"] = teachers[teachersExperiments[experiment]].username+""
-
+	      response["author"] = teachers[teachersExperiments[experiment]].username+""
       }
     }
   } else {
