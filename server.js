@@ -83,7 +83,7 @@ function loginStudent(email, password) {
 function listcontains(check,cont) {
     var result = true;
     for(i in check) {
-        if(!(i in cont)){
+        if(cont.indexOf(i) < 0){
             result = false;
         }
     }
@@ -268,7 +268,7 @@ server.get('/searchforexperiments/:userId', function(req,res){
   response = {}
   if(req.params.userId in students) {
     for(experiment in experiments) {
-      if(listcontains(experiments[experiment].requirements, students[req.params.userId].requirements)){
+      if(listcontains(experiments[experiment].requirements.split(','), students[req.params.userId].requirements.split(','))){
         response["expname"] = ""+experiments[experiment].expname
         response["time"] = ""+experiments[experiment].time
         response["explocation"] = ""+experiments[experiment].explocation
