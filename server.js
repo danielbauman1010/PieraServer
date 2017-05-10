@@ -185,7 +185,7 @@ server.post('/createexperiment', function(req,res) {
 
 server.get('/teacherexperiments/:id', function(req,res) {
   var response = {};
-  var counter = 0;  
+  var counter = 0;
   console.log(experiments)
   console.log(req.params.id)
   for(experiment in experiments) {
@@ -302,7 +302,7 @@ server.post('/participate', function(req,res) {
   } else {
     response["participateStatus"] = "0";
   }
-  console.log(res)
+  console.log(response)
   res.send(JSON.stringify(response, null, 4));
 })
 
