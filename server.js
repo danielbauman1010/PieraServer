@@ -173,7 +173,7 @@ server.post('/createexperiment', function(req,res) {
   const newExp = new Experiment(expData.expname, expData.time, expData.explocation, expData.descript, expData.objective, expData.maxParticipants, expData.requirements, expData.authorID)
   var response;
   if(expData.authorID in teachers) {
-    experiments[newExp.expid] = newExp    
+    experiments[newExp.expid] = newExp
     console.log(newExp)
     response = {"author": ""+teachers[expData.authorID].username, "expid": ""+newExp.expid, "createStatus": "1"}
   } else {
@@ -185,8 +185,7 @@ server.post('/createexperiment', function(req,res) {
 
 server.get('/teacherexperiments/:id', function(req,res) {
   var response = {};
-  var counter = 0;
-  console.log(teachersExperiments)
+  var counter = 0;  
   console.log(experiments)
   console.log(req.params.id)
   for(experiment in experiments) {
