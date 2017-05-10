@@ -268,7 +268,7 @@ server.get('/searchforexperiments/:userId', function(req,res){
   var found = false;
   if(req.params.userId in students) {
     for(experiment in experiments) {
-      if(listcontains(experiments[experiment].requirements.split(','), students[req.params.userId].requirements.split(',')) && !found && (experiments[experiment].maxParticipants > experiments[experiment].participants.length)){
+      if(listcontains(experiments[experiment].requirements.split(','), students[req.params.userId].requirements.split(',')) && !found && (experiments[experiment].maxParticipants > experiments[experiment].participants.length) && experiments[experiment].participants.indexOf(req.params.userId) < 0){
         response["expname"] = ""+experiments[experiment].expname
         response["time"] = ""+experiments[experiment].time
         response["explocation"] = ""+experiments[experiment].explocation
@@ -280,6 +280,7 @@ server.get('/searchforexperiments/:userId', function(req,res){
 	      response["authorId"] = ""+experiments[experiment].authorId
         response["searchStatus"] = '1'
 	      response["author"] = teachers[experiments[experiment].authorId].username+""
+        response["participants"] = experiments[experiment].participants+""
         found = true;
       }
     }
