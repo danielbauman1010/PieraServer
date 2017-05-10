@@ -266,9 +266,10 @@ server.post('/updaterequirements', function(req,res) {
 
 server.get('/searchforexperiments/:userId', function(req,res){
   response = {}
+  var found = false;
   if(req.params.userId in students) {
     for(experiment in experiments) {
-      if(listcontains(experiments[experiment].requirements.split(','), students[req.params.userId].requirements.split(','))){
+      if(listcontains(experiments[experiment].requirements.split(','), students[req.params.userId].requirements.split(',')) && !found){
         response["expname"] = ""+experiments[experiment].expname
         response["time"] = ""+experiments[experiment].time
         response["explocation"] = ""+experiments[experiment].explocation
@@ -280,10 +281,12 @@ server.get('/searchforexperiments/:userId', function(req,res){
 	      response["authorId"] = ""+teachersExperiments[experiment]
         response["searchStatus"] = '1'
 	      response["author"] = teachers[teachersExperiments[experiment]].username+""
+        found = true;
       }
     }
-  } else {
-    response['searchStatus'] = '0'
+  }
+  if(!found){
+    response["searchStatus"] = "0"
   }
   res.header("Content-Type",'application/json');
   res.send(JSON.stringify(response, null, 4));
