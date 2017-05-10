@@ -82,9 +82,10 @@ function loginStudent(email, password) {
 
 function listcontains(check,cont) {
     var result = true;
-    console.log(check+" "+cont);
+    console.log(check);
+    console.log(cont);
     for(i in check) {
-        if(cont.indexOf(i) < 0){
+        if(cont.indexOf(check[i]) < 0){
             result = false;
         }
     }
