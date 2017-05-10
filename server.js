@@ -21,6 +21,7 @@ class Student {
     this.interests = interests;
     this.userId = currentId;
     this.requirements = ""
+    this.experiments = []
     currentId = currentId + 1;
   }
 }
@@ -33,12 +34,13 @@ class Teacher {
     this.bio = bio;
     this.classesEnrolled = classesEnrolled;
     this.userId = currentId;
+    this.experiments = []
     currentId = currentId + 1;
   }
 }
 
 class Experiment {
-  constructor(expname, time, explocation, descript, objective, maxParticipants, requirements) {
+  constructor(expname, time, explocation, descript, objective, maxParticipants, requirements, authorId) {
     this.expid = currentId;
     currentId = currentId + 1;
     this.expname = expname
@@ -49,6 +51,7 @@ class Experiment {
     this.maxParticipants = maxParticipants;
     this.requirements = requirements;
     this.participants = [];
+    this.authorId = authorId
   }
 }
 
@@ -56,10 +59,7 @@ var teachers = {};
 var students = {};
 var studentUCodes = {"1234": "MIT", "5678": "Harvard"};
 var teacherUCodes = {"4321": "MIT", "8765": "Harvard"};
-var studentsUniversity = {};
-var teachersUniversity = {};
 var experiments = {};
-var teachersExperiments = {}
 
 function loginTeacher(email, password) {
   for(teacher in teachers) {
@@ -113,7 +113,6 @@ server.post('/createstudent', function(req,res) {
   if(studentData.ucode in studentUCodes) {
     const newStudent = new Student(studentData.username, studentData.password, studentData.email, studentData.bio, studentData.classesEnrolled, studentData.interests);
     students[newStudent.userId] = newStudent
-    studentsUniversity[newStudent.userId] = studentUCodes[studentData.ucode]
     response = {"userId": ""+newStudent.userId, "username": newStudent.username, "password": newStudent.password, "email": newStudent.email, "bio": newStudent.bio, "interests": newStudent.interests, "classesEnrolled": newStudent.classesEnrolled, "createStatus": "1"};
     console.log(response)
   } else {
@@ -130,7 +129,6 @@ server.post('/createteacher', function(req,res) {
   if(teacherData.ucode in teacherUCodes) {
     const newTeacher = new Teacher(teacherData.username, teacherData.password, teacherData.email, teacherData.bio, teacherData.classesEnrolled);
     teachers[newTeacher.userId] = newTeacher
-    teachersUniversity[newTeacher.userId] = teacherUCodes[teacherData.ucode]
     response = {"userId": ""+newTeacher.userId, "username": newTeacher.username, "password": newTeacher.password, "email": newTeacher.email, "bio": newTeacher.bio, "classesEnrolled": newTeacher.classesEnrolled, "createStatus": "1"};
   } else {
     response = {"createStatus": "0"}
@@ -172,11 +170,10 @@ server.post('/loginteacher', function(req, res) {
 server.post('/createexperiment', function(req,res) {
   console.log(req.body);
   var expData = req.body;
-  const newExp = new Experiment(expData.expname, expData.time, expData.explocation, expData.descript, expData.objective, expData.maxParticipants, expData.requirements)
+  const newExp = new Experiment(expData.expname, expData.time, expData.explocation, expData.descript, expData.objective, expData.maxParticipants, expData.requirements, expData.authorID)
   var response;
   if(expData.authorID in teachers) {
-    experiments[newExp.expid] = newExp
-    teachersExperiments[newExp.expid] = expData.authorID
+    experiments[newExp.expid] = newExp    
     console.log(newExp)
     response = {"author": ""+teachers[expData.authorID].username, "expid": ""+newExp.expid, "createStatus": "1"}
   } else {
@@ -192,8 +189,8 @@ server.get('/teacherexperiments/:id', function(req,res) {
   console.log(teachersExperiments)
   console.log(experiments)
   console.log(req.params.id)
-  for(experiment in teachersExperiments) {
-    if(teachersExperiments[experiment] == req.params.id) {
+  for(experiment in experiments) {
+    if(experiments[experiment].authorId == req.params.id) {
       response["expname"+counter] = ""+experiments[experiment].expname
       response["time"+counter] = ""+experiments[experiment].time
       response["explocation"+counter] = ""+experiments[experiment].explocation
@@ -202,6 +199,7 @@ server.get('/teacherexperiments/:id', function(req,res) {
       response["maxParticipants"+counter] = ""+experiments[experiment].maxParticipants
       response["requirements"+counter] = ""+experiments[experiment].requirements
       response["expid"] = ""+experiment
+      response["participants"] = ""+experiments[experiment].participants
       counter = counter + 1
     }
   }
@@ -271,7 +269,7 @@ server.get('/searchforexperiments/:userId', function(req,res){
   var found = false;
   if(req.params.userId in students) {
     for(experiment in experiments) {
-      if(listcontains(experiments[experiment].requirements.split(','), students[req.params.userId].requirements.split(',')) && !found){
+      if(listcontains(experiments[experiment].requirements.split(','), students[req.params.userId].requirements.split(',')) && !found && (experiments[experiment].maxParticipants > experiments[experiment].participants.length)){
         response["expname"] = ""+experiments[experiment].expname
         response["time"] = ""+experiments[experiment].time
         response["explocation"] = ""+experiments[experiment].explocation
@@ -280,9 +278,9 @@ server.get('/searchforexperiments/:userId', function(req,res){
         response["maxParticipants"] = ""+experiments[experiment].maxParticipants
         response["requirements"] = ""+experiments[experiment].requirements
         response["expid"] = ""+experiment
-	      response["authorId"] = ""+teachersExperiments[experiment]
+	      response["authorId"] = ""+experiments[experiment].authorId
         response["searchStatus"] = '1'
-	      response["author"] = teachers[teachersExperiments[experiment]].username+""
+	      response["author"] = teachers[experiments[experiment].authorId].username+""
         found = true;
       }
     }
@@ -300,6 +298,7 @@ server.post('/participate', function(req,res) {
   var response = {};
   if(data.expid in experiments && data.userId in students) {
     experiments[data.expid].participants.push(data.userId);
+    students[data.userId].experiments.push(data.expid)
     response["participateStatus"] = "1";
   } else {
     response["participateStatus"] = "0";
