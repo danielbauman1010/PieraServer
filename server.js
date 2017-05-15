@@ -23,6 +23,7 @@ class Student {
     this.requirements = ""
     this.experiments = []
     currentId = currentId + 1;
+    this.grades = {}; //dict [expid: grade]
   }
 }
 
@@ -211,6 +212,14 @@ server.get('/teacherexperiments/:id', function(req,res) {
   res.send(JSON.stringify(response, null, 4));
 })
 
+server.get('/studentexperiments/:userId', function(req,res) {
+  var response = {};
+
+
+  res.header("Content-Type",'application/json');
+  res.send(JSON.stringify(response, null, 4));
+});
+
 server.get('/requirements', function(req,res) {
   var response = {"requirements": ""};
   console.log("/requirements request made")
@@ -304,6 +313,22 @@ server.post('/participate', function(req,res) {
     response["participateStatus"] = "0";
   }
   console.log(response)
+  res.send(JSON.stringify(response, null, 4));
+})
+
+server.post('/gradestudent', function(req,res) {
+  var response = {};
+  if(req.body.userId in students) {
+    if(req.body.expid in students[req.body.userId].experiments) {
+      students[req.body.userId].grades[req.body.expid] = req.body.grade;
+      response['gradestatus'] = '1';
+    } else {
+      response['gradeStatus'] = '0';
+    }
+  } else {
+    response['gradeStatus'] = '0';
+  }
+  console.log(response);
   res.send(JSON.stringify(response, null, 4));
 })
 
