@@ -332,7 +332,7 @@ server.post('/gradestudent', function(req,res) {
   res.send(JSON.stringify(response, null, 4));
 })
 
-server.get('/getstudent/:userId', fucntion(req,res) {
+server.get('/getstudent/:userId', function(req,res) {
   var response = {};
   if(req.params.userId in students) {
     response['username'] = students[req.params.userId].username+""
