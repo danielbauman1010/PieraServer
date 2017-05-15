@@ -332,5 +332,16 @@ server.post('/gradestudent', function(req,res) {
   res.send(JSON.stringify(response, null, 4));
 })
 
+server.get('/getstudent/:userId', fucntion(req,res) {
+  var response = {};
+  if(req.params.userId in students) {
+    response['username'] = students[req.params.userId].username+""
+    response['getStatus'] = '1';
+  } else {
+    response['getStatus'] = '0';
+  }
+  console.log(response);
+  res.send(JSON.stringify(response, null, 4));
+})
 //http.createServer(server).listen(80);
 https.createServer(sslOptions, server).listen(443);
