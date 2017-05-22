@@ -40,6 +40,8 @@ class Teacher {
   }
 }
 
+
+
 class Experiment {
   constructor(expname, time, explocation, descript, objective, maxParticipants, requirements, authorId) {
     this.expid = currentId;
@@ -58,8 +60,9 @@ class Experiment {
 
 var teachers = {};
 var students = {};
-var studentUCodes = {"1234": "MIT", "5678": "Harvard"};
-var teacherUCodes = {"4321": "MIT", "8765": "Harvard"};
+var studentUCodes = {}; //code: university name
+var teacherUCodes = {};
+var administratorUCodes = {}
 var experiments = {};
 
 function loginTeacher(email, password) {
@@ -93,6 +96,16 @@ function listcontains(check,cont) {
     return result;
 }
 
+function generateucode() {
+    var text = "";
+    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+    for( var i=0; i < 7; i++ )
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+    return text;
+}
+
 //SSL:
 //openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days XXX
 var sslOptions = {
@@ -105,6 +118,29 @@ server.get('/',function(req,res) {
   console.log('request made.');
   res.end("This works.");
 });
+
+server.get('/generateucodes/:uniname', function(req,res) {
+  var response = {};
+
+  var studentCode = generateucode();
+  while(studentUCodes.indexOf(studentCode)>=0){
+    studentCode = generateucode();
+  }
+  response['studentucode'] = ""+studentCode;
+
+  var teacherCode = generateucode();
+  while(teacherUCodes.indexOf(teacherCode)>=0){
+    teacherCode = generateucode();
+  }
+  response['studentucode'] = ""+studentCode;
+  while(studentUCodes.indexOf(studentCode)>=0){
+    studentCode = generateucode();
+  }
+  response['studentucode'] = ""+studentCode;
+
+  res.header("Content-Type",'application/json');
+  res.send(JSON.stringify(response, null, 4));
+})
 
 server.post('/createstudent', function(req,res) {
   console.log(req.body);
@@ -343,5 +379,6 @@ server.get('/getstudent/:userId', function(req,res) {
   console.log(response);
   res.send(JSON.stringify(response, null, 4));
 })
+
 //http.createServer(server).listen(80);
 https.createServer(sslOptions, server).listen(443);
