@@ -12,26 +12,37 @@ server.use(express.static('public'));
 var currentId = 0;
 
 class Student {
-  constructor(username, password, email, classesEnrolled, university) {
+  constructor(username, password, email, university) {
     this.username = username;
     this.password = password;
     this.email = email;
-    this.classesEnrolled = classesEnrolled;
     this.userId = currentId;
     this.requirements = ""
-    this.experiments = []
+    this.experiments = {} //dict: [exp: Double/String], credit/NA
     currentId = currentId + 1;
-    this.grades = {}; //dict [expid: grade]
     this.university = university;
   }
 }
 
-class Teacher {
-  constructor(username, password, email, classesEnrolled, university) {
+class Admin {
+  constructor(username, password, email, university) {
     this.username = username;
     this.password = password;
     this.email = email;
-    this.classesEnrolled = classesEnrolled;
+    this.university = university;
+    this.pertime = 0.5;
+    this.required = 5.0;
+    this.penalty = 0.0;
+    this.userId = currentId;
+    currentId = currentId = 1;
+  }
+}
+
+class Teacher {
+  constructor(username, password, email, university) {
+    this.username = username;
+    this.password = password;
+    this.email = email;
     this.userId = currentId;
     this.experiments = []
     currentId = currentId + 1;
@@ -59,27 +70,38 @@ class Experiment {
 
 var teachers = {};
 var students = {};
+var admins = {};
 var studentUCodes = {}; //code: university name
 var teacherUCodes = {};
 var adminUCodes = {}
 var experiments = {};
+var uniadmins = {}; //uniname: adminId
 
-function loginTeacher(email, password) {
-  for(teacher in teachers) {
-    if(teachers[teacher].email.localeCompare(email) == 0 && teachers[teacher].password.localeCompare(password) == 0) {
-      return teachers[teacher];
+function login(email,password,ucode) {
+  if(ucode in studentUCodes) {
+    for(student in students) {
+      if(students[student].email.localeCompare(email) == 0 && students[student].password.localeCompare(password) == 0) {
+        return students[student];
+      }
     }
-  }
-  return 0;
-}
-
-function loginStudent(email, password) {
-  for(student in students) {
-    if(students[student].email.localeCompare(email) == 0 && students[student].password.localeCompare(password) == 0) {
-      return students[student];
+    return 0;
+  } else if(ucode in teacherUCodes) {
+    for(teacher in teachers) {
+      if(teachers[teacher].email.localeCompare(email) == 0 && teachers[teacher].password.localeCompare(password) == 0) {
+        return teachers[teacher];
+      }
     }
+    return 0;
+  } else if(ucode in adminUCodes) {
+    for(admin in admins) {
+      if(admins[admin].email.localeCompare(email) == 0 && admins[admin].password.localeCompare(password) == 0) {
+        return admins[admin];
+      }
+    }
+    return 0;
+  } else {
+    return 0;
   }
-  return 0;
 }
 
 function notEmpty(value) {
@@ -125,7 +147,7 @@ server.get('/student/:userId', function(req,res) {
   var response = {'getStatus': '0'};
   if(req.params.userId in students){
     var student = students[req.params.userId]
-    response = {"userId": ""+student.userId, "username": ""+student.username, "email": ""+student.email, "classesEnrolled": ""+student.classesEnrolled, "university": ""+student.university, "getStatus": "1"};
+    response = {"userId": ""+student.userId, "username": ""+student.username, "email": ""+student.email, "university": ""+student.university, "getStatus": "1"};
   }
   res.header("Content-Type",'application/json');
   res.send(JSON.stringify(response, null, 4));
@@ -135,7 +157,17 @@ server.get('/teacher/:userId', function(req,res) {
   var response = {'getStatus': '0'};
   if(req.params.userId in teachers){
     var teacher = teachers[req.params.userId]
-    response = {"userId": ""+teacher.userId, "username": ""+teacher.username, "email": ""+teacher.email, "classesEnrolled": ""+teacher.classesEnrolled, "university": ""+teacher.university, "getStatus": "1"};
+    response = {"userId": ""+teacher.userId, "username": ""+teacher.username, "email": ""+teacher.email, "university": ""+teacher.university, "getStatus": "1"};
+  }
+  res.header("Content-Type",'application/json');
+  res.send(JSON.stringify(response, null, 4));
+})
+
+server.get('/admin/:userId', function(req,res) {
+  var response = {'getStatus': '0'};
+  if(req.params.userId in admins){
+    var admin = admins[req.params.userId]
+    response = {"userId": ""+admin.userId, "username": ""+admin.username, "email": ""+admin.email, "university": ""+admin.university, "getStatus": "1"};
   }
   res.header("Content-Type",'application/json');
   res.send(JSON.stringify(response, null, 4));
@@ -202,83 +234,52 @@ server.get('/generateucodes/:uniname', function(req,res) {
   res.send(JSON.stringify(response, null, 4));
 })
 
-server.get('/ucodetype/:ucode', function(req,res) {
-  //key: 0: None, 1: Student, 2: Teacher, 3: Admin
-  var response = {"ucodetype": "0"};
-  if(req.params.ucode in studentUCodes) {
-    response["ucodetype"] = "1";
-  }
-  if(req.params.ucode in teacherUCodes) {
-    response["ucodetype"] = "2";
-  }
-  if(req.params.ucode in adminUCodes) {
-    response["ucodetype"] = "3";
-  }
-  res.header("Content-Type",'application/json');
-  res.send(JSON.stringify(response, null, 4));
-})
-
-server.post('/createstudent', function(req,res) {
-  console.log(req.body);
-  console.log("creating student")
-  var studentData = req.body;
-  var response = {};
-  if(studentData.ucode in studentUCodes) {
-    const newStudent = new Student(studentData.username, studentData.password, studentData.email, studentData.classesEnrolled, studentData.ucode);
+server.post('/signup', function(req,res) {
+  var data = req.body;
+  console.log(data);
+  var response['createStatus'] = '0';
+  if(data.ucode in studentUCodes) {
+    var newStudent = new Student(data.username, data.password, data.email, studentUCodes[data.ucode]);
     students[newStudent.userId] = newStudent
-    response = {"userId": ""+newStudent.userId, "createStatus": "1"};
-  } else {
-    response = {"createStatus": "0"}
-  }
-  console.log(response)
-  res.header("Content-Type",'application/json');
-  res.send(JSON.stringify(response, null, 4));
-});
-
-server.post('/createteacher', function(req,res) {
-  console.log(req.body);
-  var teacherData = req.body;
-  var response = {};
-  if(teacherData.ucode in teacherUCodes) {
-    const newTeacher = new Teacher(teacherData.username, teacherData.password, teacherData.email, teacherData.bio, teacherData.classesEnrolled, teacherData.ucode);
+    response = {"userId": ""+newStudent.userId, "userType": "Student", "createStatus": "1"};
+  } else if(data.ucode in teacherUCodes) {
+    var newTeacher = new Teacher(data.username, data.password, data.email, teacherUCodes[data.ucode]);
     teachers[newTeacher.userId] = newTeacher
-    response = {"userId": ""+newTeacher.userId, "createStatus": "1"};
-  } else {
-    response = {"createStatus": "0"}
+    response = {"userId": ""+newTeacher.userId, "userType": "Teacher", "createStatus": "1"};
+  } else if(data.ucode in adminUCodes) {
+    if(!(adminUCodes[data.ucode] in uniadmins)) {
+      var newAdmin = new Admin(data.username, data.password, data.email, adminUCodes[data.ucode]);
+      admins[newAdmin.userId] = newAdmin;
+      uniadmins[adminUCodes[data.ucode]] = newAdmin.userId;
+      response = {"userId": ""+newAdmin.userId, "userType": "Admin", "createStatus": "1"};
+    }
   }
   res.header("Content-Type",'application/json');
   res.send(JSON.stringify(response, null, 4));
 })
 
-server.post('/loginstudent', function(req, res) {
+server.post('/signin', function(req,res) {
   console.log(req.body);
-  var loginData = req.body;
-  const student = loginStudent(loginData.email, loginData.password);
-  var response = {}
-  if(student == 0){
-    response["loginStatus"]= "0";
+  const loginResult = login(req.body.email, req.body.password, req.body.ucode);
+  var response = {};
+  if(loginResult instanceof Student) {
+    response['loginStatus'] = '1';
+    response['userId'] = ""+loginResult.userId;
+    response['userType'] = 'Student';
+  } else if(loginResult instanceof Teacher) {
+    response['loginStatus'] = '1';
+    response['userId'] = ""+loginResult.userId;
+    response['userType'] = 'Teacher';
+  } else if(loginResult instanceof Admin) {
+    response['loginStatus'] = '1';
+    response['userId'] = ""+loginResult.userId;
+    response['userType'] = 'Admin';
   } else {
-    response["userId"] = ""+student.userId;
-    response["loginStatus"] = "1";
+    response['loginStatus'] = '0';
   }
   res.header("Content-Type",'application/json');
   res.send(JSON.stringify(response, null, 4));
-});
-
-server.post('/loginteacher', function(req, res) {
-  console.log(req.body);
-  var loginData = req.body;
-  const teacher = loginTeacher(loginData.email, loginData.password);
-  if(teacher == 0){
-    const err = {"loginStatus": "0"};
-    res.header("Content-Type",'application/json');
-    res.send(JSON.stringify(err, null, 4));
-  } else {
-    var response = {"userId": ""+teacher.userId, "loginStatus": "1"};
-    res.header("Content-Type",'application/json');
-    res.send(JSON.stringify(response, null, 4));
-  }
-});
+})
 
 server.post('/createexperiment', function(req,res) {
   console.log(req.body);
@@ -392,7 +393,7 @@ server.post('/participate', function(req,res) {
   var response = {};
   if(data.expid in experiments && data.userId in students) {
     experiments[data.expid].participants.push(data.userId);
-    students[data.userId].experiments.push(data.expid)
+    students[data.userId].experiments[data.expid] = "N/A"
     response["participateStatus"] = "1";
   } else {
     response["participateStatus"] = "0";
@@ -401,33 +402,43 @@ server.post('/participate', function(req,res) {
   res.send(JSON.stringify(response, null, 4));
 })
 
-server.post('/gradestudent', function(req,res) {
-  var response = {};
-  if(req.body.userId in students) {
-    if(req.body.expid in students[req.body.userId].experiments) {
-      students[req.body.userId].grades[req.body.expid] = req.body.grade;
-      response['gradestatus'] = '1';
-    } else {
-      response['gradeStatus'] = '0';
-    }
-  } else {
-    response['gradeStatus'] = '0';
+server.get('/credits/:uniname', function(req,res) {
+  var response = {'getStatus': '0'};
+  if(req.params.uniname in uniadmins) {
+    response['getStatus'] = '1';
+    response['pertime'] = admins[uniadmins[req.params.uniname]].pertime+"";
+    response['required'] = admins[uniadmins[req.params.uniname]].required+"";
+    response['penalty'] = admins[uniadmins[req.params.uniname]].penalty+"";
   }
   console.log(response);
   res.send(JSON.stringify(response, null, 4));
 })
 
-server.get('/getstudent/:userId', function(req,res) {
-  var response = {};
-  if(req.params.userId in students) {
-    response['username'] = students[req.params.userId].username+""
-    response['getStatus'] = '1';
-  } else {
-    response['getStatus'] = '0';
+server.post('/updatecredits', function(req,res) {
+  var response = {'updateStatus': '0'};
+  if(req.body.userId in admins) {
+    admins[req.body.userId].penalty = Number(req.body.penalty);
+    admins[req.body.userId].pertime = Number(req.body.pertime);
+    admins[req.body.userId].required = Number(req.body.required);
+    response['updateStatus'] = '1';
   }
   console.log(response);
   res.send(JSON.stringify(response, null, 4));
 })
+
+server.post('/gradestudent', function(req,res) {
+  var response = {'gradeStatus': '0'};
+  if(req.body.userId in students) {
+    if(req.body.expid in students[req.body.userId].experiments) {
+      students[req.body.userId].experiments[req.body.expid] = req.body.grade;
+      response['gradeStatus'] = '1';
+    }
+  }
+  console.log(response);
+  res.send(JSON.stringify(response, null, 4));
+})
+
+
 
 //http.createServer(server).listen(80);
 https.createServer(sslOptions, server).listen(443);
