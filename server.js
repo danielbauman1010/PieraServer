@@ -61,7 +61,7 @@ var teachers = {};
 var students = {};
 var studentUCodes = {}; //code: university name
 var teacherUCodes = {};
-var administratorUCodes = {}
+var adminUCodes = {}
 var experiments = {};
 
 function loginTeacher(email, password) {
@@ -165,8 +165,8 @@ server.get('/experiment/:expid', function(req,res) {
 server.get('/generateucodes/:uniname', function(req,res) {
   var response = {};
   var exists = false;
-  for(uni in administratorUCodes) {
-    if(administratorUCodes[uni].localeCompare('uniname') == 0) {
+  for(uni in adminUCodes) {
+    if(adminUCodes[uni].localeCompare(req.params.uniname) == 0) {
       exists = true;
     }
   }
@@ -186,14 +186,34 @@ server.get('/generateucodes/:uniname', function(req,res) {
     response['teacherucode'] = ""+teacherCode;
 
     var adminCode = generateucode();
-    while(adminCode in administratorUCodes){
+    while(adminCode in adminUCodes){
       adminCode = generateucode();
     }
     response['adminucode'] = ""+adminCode;
 
+    studentUCodes[studentCode] = req.params.uniname
+    teacherUCodes[teacherCode] = req.params.uniname
+    adminUCodes[adminCode] = req.params.uniname
+
     response['generateStatus'] = '1';
   }
 
+  res.header("Content-Type",'application/json');
+  res.send(JSON.stringify(response, null, 4));
+})
+
+server.get('/ucodetype/:ucode', function(req,res) {
+  //key: 0: None, 1: Student, 2: Teacher, 3: Admin
+  var response = {"ucodetype": "0"};
+  if(req.params.ucode in studentUCodes) {
+    response["ucodetype"] = "1";
+  }
+  if(req.params.ucode in teacherUCodes) {
+    response["ucodetype"] = "2";
+  }
+  if(req.params.ucode in adminUCodes) {
+    response["ucodetype"] = "3";
+  }
   res.header("Content-Type",'application/json');
   res.send(JSON.stringify(response, null, 4));
 })
@@ -234,15 +254,15 @@ server.post('/loginstudent', function(req, res) {
   console.log(req.body);
   var loginData = req.body;
   const student = loginStudent(loginData.email, loginData.password);
+  var response = {}
   if(student == 0){
-    const err = {"loginStatus": "0"};
-    res.header("Content-Type",'application/json');
-    res.send(JSON.stringify(err, null, 4));
+    response["loginStatus"]= "0";
   } else {
-    var response = {"userId": ""+student.userId, "loginStatus": "1"};
-    res.header("Content-Type",'application/json');
-    res.send(JSON.stringify(response, null, 4));
+    response["userId"] = ""+student.userId;
+    response["loginStatus"] = "1";
   }
+  res.header("Content-Type",'application/json');
+  res.send(JSON.stringify(response, null, 4));
 });
 
 server.post('/loginteacher', function(req, res) {
