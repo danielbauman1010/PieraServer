@@ -237,7 +237,7 @@ server.get('/generateucodes/:uniname', function(req,res) {
 server.post('/signup', function(req,res) {
   var data = req.body;
   console.log(data);
-  var response['createStatus'] = '0';
+  var response = {'createStatus': '0'};
   if(data.ucode in studentUCodes) {
     var newStudent = new Student(data.username, data.password, data.email, studentUCodes[data.ucode]);
     students[newStudent.userId] = newStudent
