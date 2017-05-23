@@ -250,8 +250,25 @@ server.get('/teacherexperiments/:id', function(req,res) {
 
 server.get('/studentexperiments/:userId', function(req,res) {
   var response = {};
-
-
+  response["getStatus"] = '0'
+  if(req.body.userId in students) {
+    var counter = 0;
+    for(experiment in students[req.body.userId].experiments) {
+      response["expname"+counter] = ""+experiments[experiment].expname
+      response["time"+counter] = ""+experiments[experiment].time
+      response["explocation"+counter] = ""+experiments[experiment].explocation
+      response["descript"+counter] = ""+experiments[experiment].descript
+      response["objective"+counter] = ""+experiments[experiment].objective
+      response["maxParticipants"+counter] = ""+experiments[experiment].maxParticipants
+      response["requirements"+counter] = ""+experiments[experiment].requirements
+      response["expid"+counter] = ""+experiment
+      response["participants"+counter] = ""+experiments[experiment].participants
+      response["authorId"] = ""+experiments[experiment].authorId
+      response["getStatus"] = '1'
+      response["author"] = teachers[experiments[experiment].authorId].username+""
+      counter = counter + 1
+    }
+  }
   res.header("Content-Type",'application/json');
   res.send(JSON.stringify(response, null, 4));
 });
