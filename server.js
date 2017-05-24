@@ -336,7 +336,7 @@ server.get('/studenthistory/:userId', function(req,res) {
   if(req.params.userId in students) {
     response['getStatus'] = '1';
     var stexps = [];
-    for(e in student[req.params.userId].gradedExperiments) {
+    for(e in students[req.params.userId].gradedExperiments) {
       stexps.push(e+":"+student[req.params.userId].gradedExperiments[e])
     }
     response['experiments'] = ""+stexps;
