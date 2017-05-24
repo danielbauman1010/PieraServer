@@ -455,7 +455,7 @@ server.post('/updatecredits', function(req,res) {
 server.post('/gradestudent', function(req,res) {
   var response = {'gradeStatus': '0'};
   if(req.body.userId in students) {
-    if(req.body.expid in students[req.body.userId].experiments) {
+    if(students[req.body.userId].experiments.indexOf(req.body.expid) >= 0) {
       students[req.body.userId].gradedExperiments[req.body.expid] = req.body.grade;
       students[req.body.userId].experiments = removeFromArr(students[req.body.userId].experiments, req.body.expid);
       response['gradeStatus'] = '1';
