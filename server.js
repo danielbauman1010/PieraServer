@@ -398,6 +398,7 @@ server.get('/searchforexperiments/:userId', function(req,res){
     for(experiment in experiments) {
       if(listcontains(experiments[experiment].requirements.split(','), students[req.params.userId].requirements.split(',')) && !found && (experiments[experiment].maxParticipants > experiments[experiment].participants.length) && experiments[experiment].participants.indexOf(req.params.userId) < 0){
         response['expid'] = experiment;
+        response['searchStatus'] = '1';
         found = true;
       }
     }
