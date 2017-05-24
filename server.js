@@ -215,7 +215,7 @@ server.get('/experiment/:expid', function(req,res) {
   var response = {'getStatus': '0'};
   if(req.params.expid in experiments){
     var experiment = experiments[req.params.expid];
-    r = addExperimentToResponse(r,experiment, "");
+    response = addExperimentToResponse(r,experiment, "");
     response["getStatus"] = "1";
   }
   res.header("Content-Type",'application/json');
@@ -320,8 +320,9 @@ server.post('/createexperiment', function(req,res) {
   if(expData.authorID in teachers) {
     experiments[newExp.expid] = newExp
     teachers[expData.authorID].experiments.push(newExp.expid)
-    console.log(newExp)
-    response = {"expid": ""+newExp.expid, "createStatus": "1"}
+    console.log(newExp);
+    response = {"createStatus": "1"};
+    response = addExperimentToResponse(response, newExp, "");
   } else {
     response = {"createStatus": "0"}
   }
