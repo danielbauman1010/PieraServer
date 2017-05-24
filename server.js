@@ -139,6 +139,29 @@ function generateucode() {
     return text;
 }
 
+function addUserToResponse(response,user,counter) {
+  response[counter+"userId"] = ""+user.userId;
+  response[counter+"username"] = ""+user.username;
+  response[counter+"email"] = ""+user.email;
+  response[counter+"university"] = ""+user.university;
+  return response;
+}
+
+function addExperimentToResponse(response,experiment,counter) {
+  response[counter+"expname"] = ""+experiment.expname;
+  response[counter+"time"] = ""+experiment.time;
+  response[counter+"timeToComplete"] = ""+experiment.timeToComplete;
+  response[counter+"explocation"] = ""+experiment.explocation;
+  response[counter+"descript"] = ""+experiment.descript;
+  response[counter+"objective"] = ""+experiment.objective;
+  response[counter+"maxParticipants"] = ""+experiment.maxParticipants;
+  response[counter+"requirements"] = ""+experiment.requirements;
+  response[counter+"expid"] = ""+experiment.expid;
+  response[counter+"authorId"] = ""+experiment.authorId;
+  response[counter+"author"] = teachers[experiment.authorId].username+"";
+  response[counter+"participants"] = experiment.participants+"";
+  return response;
+}
 //SSL:
 //openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days XXX
 var sslOptions = {
@@ -152,12 +175,16 @@ server.get('/',function(req,res) {
   res.end("PIERA\nUse the app!");
 });
 
+
+
 server.get('/student/:userId', function(req,res) {
   var response = {'getStatus': '0'};
   if(req.params.userId in students){
-    var student = students[req.params.userId]
-    response = {"userId": ""+student.userId, "username": ""+student.username, "email": ""+student.email, "university": ""+student.university, "getStatus": "1"};
+    var student = students[req.params.userId];
+    response['getStatus'] = '1';
+    response = addUserToResponse(response,student,"");
   }
+  console.log(response);
   res.header("Content-Type",'application/json');
   res.send(JSON.stringify(response, null, 4));
 })
@@ -166,7 +193,8 @@ server.get('/teacher/:userId', function(req,res) {
   var response = {'getStatus': '0'};
   if(req.params.userId in teachers){
     var teacher = teachers[req.params.userId]
-    response = {"userId": ""+teacher.userId, "username": ""+teacher.username, "email": ""+teacher.email, "university": ""+teacher.university, "getStatus": "1"};
+    response['getStatus'] = '1';
+    response = addUserToResponse(response,teacher,"");
   }
   res.header("Content-Type",'application/json');
   res.send(JSON.stringify(response, null, 4));
@@ -175,8 +203,9 @@ server.get('/teacher/:userId', function(req,res) {
 server.get('/admin/:userId', function(req,res) {
   var response = {'getStatus': '0'};
   if(req.params.userId in admins){
-    var admin = admins[req.params.userId]
-    response = {"userId": ""+admin.userId, "username": ""+admin.username, "email": ""+admin.email, "university": ""+admin.university, "getStatus": "1"};
+    var admin = admins[req.params.userId];
+    response['getStatus'] = '1';
+    response = addUserToResponse(response,admin,"");
   }
   res.header("Content-Type",'application/json');
   res.send(JSON.stringify(response, null, 4));
@@ -186,18 +215,7 @@ server.get('/experiment/:expid', function(req,res) {
   var response = {'getStatus': '0'};
   if(req.params.expid in experiments){
     var experiment = experiments[req.params.expid];
-    response["expname"] = ""+experiment.expname;
-    response["time"] = ""+experiment.time;
-    response["timeToComplete"] = ""+experiment.timeToComplete;
-    response["explocation"] = ""+experiment.explocation;
-    response["descript"] = ""+experiment.descript;
-    response["objective"] = ""+experiment.objective;
-    response["maxParticipants"] = ""+experiment.maxParticipants;
-    response["requirements"] = ""+experiment.requirements;
-    response["expid"] = ""+req.params.expid;
-    response["authorId"] = ""+experiment.authorId;
-    response["author"] = teachers[experiment.authorId].username+"";
-    response["participants"] = experiment.participants+"";
+    r = addExperimentToResponse(r,experiment, "");
     response["getStatus"] = "1";
   }
   res.header("Content-Type",'application/json');
@@ -251,17 +269,20 @@ server.post('/signup', function(req,res) {
   if(data.ucode in studentUCodes) {
     var newStudent = new Student(data.username, data.password, data.email, studentUCodes[data.ucode]);
     students[newStudent.userId] = newStudent
-    response = {"userId": ""+newStudent.userId, "userType": "Student", "createStatus": "1"};
+    response = {"userType": "Student", "createStatus": "1"};
+    response = addUserToResponse(response, newStudent,"");
   } else if(data.ucode in teacherUCodes) {
     var newTeacher = new Teacher(data.username, data.password, data.email, teacherUCodes[data.ucode]);
     teachers[newTeacher.userId] = newTeacher
-    response = {"userId": ""+newTeacher.userId, "userType": "Teacher", "createStatus": "1"};
+    response = {"userType": "Teacher", "createStatus": "1"};
+    response = addUserToResponse(response, newTeacher,"");
   } else if(data.ucode in adminUCodes) {
     if(!(adminUCodes[data.ucode] in uniadmins)) {
       var newAdmin = new Admin(data.username, data.password, data.email, adminUCodes[data.ucode]);
       admins[newAdmin.userId] = newAdmin;
       uniadmins[adminUCodes[data.ucode]] = newAdmin.userId;
-      response = {"userId": ""+newAdmin.userId, "userType": "Admin", "createStatus": "1"};
+      response = {"userType": "Admin", "createStatus": "1"};
+      response = addUserToResponse(response, newAdmin,"");
     }
   }
   res.header("Content-Type",'application/json');
@@ -274,15 +295,15 @@ server.post('/signin', function(req,res) {
   var response = {};
   if(loginResult instanceof Student) {
     response['loginStatus'] = '1';
-    response['userId'] = ""+loginResult.userId;
+    response = addUserToResponse(response,students[loginResult.userId],"");
     response['userType'] = 'Student';
   } else if(loginResult instanceof Teacher) {
     response['loginStatus'] = '1';
-    response['userId'] = ""+loginResult.userId;
+    response = addUserToResponse(response,teachers[loginResult.userId],"");
     response['userType'] = 'Teacher';
   } else if(loginResult instanceof Admin) {
     response['loginStatus'] = '1';
-    response['userId'] = ""+loginResult.userId;
+    response = addUserToResponse(response,admins[loginResult.userId],"");
     response['userType'] = 'Admin';
   } else {
     response['loginStatus'] = '0';
@@ -310,11 +331,14 @@ server.post('/createexperiment', function(req,res) {
 
 server.get('/teacherexperiments/:id', function(req,res) {
   var response = {};
-  console.log(experiments)
-  console.log(req.params.id)
+  console.log(experiments);
+  console.log(req.params.id);
   if(req.params.id in teachers) {
-    response["getStatus"] = "1"
-    response['expids'] = ""+teachers[req.params.id].experiments
+    response["getStatus"] = "1";
+    var exps = teachers[req.params.id].experiments;
+    for(experiment in exps) {
+      response = addExperimentToResponse(response,exps[experiment],experiment+"");
+    }
   } else {
     response["getStatus"] = "0"
   }
@@ -326,7 +350,9 @@ server.get('/studentexperiments/:userId', function(req,res) {
   var response = {};
   response["getStatus"] = '0'
   if(req.params.userId in students) {
-    response["expids"] = ""+students[req.params.userId].experiments
+    for(exp in students[req.params.userId].experiments) {
+        response = addExperimentToResponse(response, students[req.params.userId].experiments[exp],exp)
+    }
     response["getStatus"] = '1'
   }
   res.header("Content-Type",'application/json');
@@ -337,11 +363,12 @@ server.get('/studenthistory/:userId', function(req,res) {
   var response = {'getStatus': '0'};
   if(req.params.userId in students) {
     response['getStatus'] = '1';
-    var stexps = [];
+    var counter = 0;
     for(e in students[req.params.userId].gradedExperiments) {
-      stexps.push(e+":"+students[req.params.userId].gradedExperiments[e])
+      response = addExperimentToResponse(response, experiments[e], counter);
+      response[counter+"grade"] = students[req.params.userId].gradedExperiments[e];
+      counter = counter + 1;
     }
-    response['experiments'] = ""+stexps;
   }
   res.header("Content-Type",'application/json');
   res.send(JSON.stringify(response, null, 4));
