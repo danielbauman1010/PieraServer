@@ -19,7 +19,7 @@ class Student {
     this.userId = currentId;
     this.requirements = ""
     this.experiments = []
-    this.gradedExperiments = {}
+    this.gradedExperiments = {} //dict: [expid: grade]
     currentId = currentId + 1;
     this.university = university;
   }
@@ -51,7 +51,14 @@ class Teacher {
   }
 }
 
-
+function removeFromArr(arr,val) {
+  for(i in arr){
+    if(arr[i]==val) {
+      arr.splice(i,1)
+    }
+  }
+  return arr
+}
 
 class Experiment {
   constructor(expname, time, explocation, descript, objective, maxParticipants, requirements, authorId) {
@@ -324,6 +331,20 @@ server.get('/studentexperiments/:userId', function(req,res) {
   res.send(JSON.stringify(response, null, 4));
 });
 
+server.get('/studenthistory/:userId', function(req,res) {
+  var response = {'getStatus': '0'};
+  if(req.params.userId in students) {
+    response['getStatus'] = '1';
+    var stexps = [];
+    for(e in student[req.params.userId].gradedExperiments) {
+      stexps.push(e+":"+student[req.params.userId].gradedExperiments[e])
+    }
+    response['experiments'] = ""+stexps;
+  }
+  res.header("Content-Type",'application/json');
+  res.send(JSON.stringify(response, null, 4));
+})
+
 server.get('/requirements', function(req,res) {
   var response = {"requirements": ""};
   console.log("/requirements request made")
@@ -400,6 +421,7 @@ server.post('/participate', function(req,res) {
     response["participateStatus"] = "0";
   }
   console.log(response)
+  res.header("Content-Type",'application/json');
   res.send(JSON.stringify(response, null, 4));
 })
 
@@ -412,6 +434,7 @@ server.get('/credits/:uniname', function(req,res) {
     response['penalty'] = admins[uniadmins[req.params.uniname]].penalty+"";
   }
   console.log(response);
+  res.header("Content-Type",'application/json');
   res.send(JSON.stringify(response, null, 4));
 })
 
@@ -424,6 +447,7 @@ server.post('/updatecredits', function(req,res) {
     response['updateStatus'] = '1';
   }
   console.log(response);
+  res.header("Content-Type",'application/json');
   res.send(JSON.stringify(response, null, 4));
 })
 
@@ -431,14 +455,15 @@ server.post('/gradestudent', function(req,res) {
   var response = {'gradeStatus': '0'};
   if(req.body.userId in students) {
     if(req.body.expid in students[req.body.userId].experiments) {
-      students[req.body.userId].experiments[req.body.expid] = req.body.grade;
+      students[req.body.userId].gradedExperiments[req.body.expid] = req.body.grade;
+      students[req.body.userId].experiments = removeFromArr(students[req.body.userId].experiments, req.body.expid);
       response['gradeStatus'] = '1';
     }
   }
   console.log(response);
+  res.header("Content-Type",'application/json');
   res.send(JSON.stringify(response, null, 4));
 })
-
 
 
 //http.createServer(server).listen(80);
