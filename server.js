@@ -323,8 +323,8 @@ server.get('/teacherexperiments/:id', function(req,res) {
 server.get('/studentexperiments/:userId', function(req,res) {
   var response = {};
   response["getStatus"] = '0'
-  if(req.body.userId in students) {
-    response["expids"] = ""+students[req.body.userId].experiments
+  if(req.params.userId in students) {
+    response["expids"] = ""+students[req.params.userId].experiments
     response["getStatus"] = '1'
   }
   res.header("Content-Type",'application/json');
