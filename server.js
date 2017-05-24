@@ -215,7 +215,7 @@ server.get('/experiment/:expid', function(req,res) {
   var response = {'getStatus': '0'};
   if(req.params.expid in experiments){
     var experiment = experiments[req.params.expid];
-    response = addExperimentToResponse(r,experiment, "");
+    response = addExperimentToResponse(response,experiment, "");
     response["getStatus"] = "1";
   }
   res.header("Content-Type",'application/json');
