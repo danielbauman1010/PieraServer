@@ -192,7 +192,7 @@ server.get('/experiment/:expid', function(req,res) {
     response["objective"] = ""+experiment.objective;
     response["maxParticipants"] = ""+experiment.maxParticipants;
     response["requirements"] = ""+experiment.requirements;
-    response["expid"] = ""+experiment;
+    response["expid"] = ""+req.params.expid;
     response["authorId"] = ""+experiment.authorId;
     response["author"] = teachers[experiment.authorId].username+"";
     response["participants"] = experiment.participants+"";
