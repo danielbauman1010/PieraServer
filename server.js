@@ -18,7 +18,8 @@ class Student {
     this.email = email;
     this.userId = currentId;
     this.requirements = ""
-    this.experiments = {} //dict: [exp: Double/String], credit/NA
+    this.experiments = []
+    this.gradedExperiments = {}
     currentId = currentId + 1;
     this.university = university;
   }
@@ -64,7 +65,7 @@ class Experiment {
     this.maxParticipants = maxParticipants;
     this.requirements = requirements;
     this.participants = [];
-    this.authorId = authorId
+    this.authorId = authorId;
   }
 }
 
@@ -188,7 +189,7 @@ server.get('/experiment/:expid', function(req,res) {
     response["authorId"] = ""+experiment.authorId;
     response["author"] = teachers[experiment.authorId].username+"";
     response["participants"] = experiment.participants+"";
-    response = {"getStatus": "1"};
+    response["getStatus"] = "1";
   }
   res.header("Content-Type",'application/json');
   res.send(JSON.stringify(response, null, 4));
