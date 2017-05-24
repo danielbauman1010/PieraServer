@@ -352,7 +352,7 @@ server.get('/studentexperiments/:userId', function(req,res) {
   response["getStatus"] = '0'
   if(req.params.userId in students) {
     for(exp in students[req.params.userId].experiments) {
-        response = addExperimentToResponse(response, students[req.params.userId].experiments[exp],exp)
+        response = addExperimentToResponse(response, students[req.params.userId].experiments[students[req.params.userId].experiments[exp]],exp)
     }
     response["getStatus"] = '1'
   }
