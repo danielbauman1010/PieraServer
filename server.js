@@ -416,7 +416,7 @@ server.post('/participate', function(req,res) {
   var response = {};
   if(data.expid in experiments && data.userId in students) {
     experiments[data.expid].participants.push(data.userId);
-    students[data.userId].experiments[data.expid] = "N/A"
+    students[data.userId].experiments.push(data.expid);
     response["participateStatus"] = "1";
   } else {
     response["participateStatus"] = "0";
