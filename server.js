@@ -61,11 +61,12 @@ function removeFromArr(arr,val) {
 }
 
 class Experiment {
-  constructor(expname, time, explocation, descript, objective, maxParticipants, requirements, authorId) {
+  constructor(expname, time, timeToComplete, explocation, descript, objective, maxParticipants, requirements, authorId) {
     this.expid = currentId;
     currentId = currentId + 1;
     this.expname = expname
     this.time = time;
+    this.timeToComplete = timeToComplete;
     this.explocation = explocation;
     this.descript = descript;
     this.objective = objective;
@@ -187,6 +188,7 @@ server.get('/experiment/:expid', function(req,res) {
     var experiment = experiments[req.params.expid];
     response["expname"] = ""+experiment.expname;
     response["time"] = ""+experiment.time;
+    response["timeToComplete"] = ""+experiment.timeToComplete;
     response["explocation"] = ""+experiment.explocation;
     response["descript"] = ""+experiment.descript;
     response["objective"] = ""+experiment.objective;
@@ -292,7 +294,7 @@ server.post('/signin', function(req,res) {
 server.post('/createexperiment', function(req,res) {
   console.log(req.body);
   var expData = req.body;
-  const newExp = new Experiment(expData.expname, expData.time, expData.explocation, expData.descript, expData.objective, expData.maxParticipants, expData.requirements, expData.authorID)
+  const newExp = new Experiment(expData.expname, expData.time, expData.timeToComplete, expData.explocation, expData.descript, expData.objective, expData.maxParticipants, expData.requirements, expData.authorID)
   var response = {};
   if(expData.authorID in teachers) {
     experiments[newExp.expid] = newExp
