@@ -153,6 +153,15 @@ function addUserToResponse(response,user,counter) {
   response[counter+"username"] = ""+user.username;
   response[counter+"email"] = ""+user.email;
   response[counter+"university"] = ""+user.university;
+  if(user.university in uniadmins){
+    response[counter+'pertime'] = admins[uniadmins[user.university]].pertime+"";
+    response[counter+'required'] = admins[uniadmins[user.university]].required+"";
+    response[counter+'penalty'] = admins[uniadmins[user.university]].penalty+"";
+  } else {
+    response[counter+'pertime'] = 0.5+"";
+    response[counter+'required'] = 5.0+"";
+    response[counter+'penalty'] = 0.0+"";
+  }
   return response;
 }
 
@@ -306,7 +315,6 @@ server.post('/signin', function(req,res) {
     response['loginStatus'] = '1';
     response = addUserToResponse(response,students[loginResult.userId],"");
     response['userType'] = 'Student';
-    response['requirements'] = ''+allrequirements;
     response['grade'] = loginResult.grade();
   } else if(loginResult instanceof Teacher) {
     response['loginStatus'] = '1';
@@ -440,8 +448,8 @@ server.get('/searchforexperiments/:userId', function(req,res){
   var found = false;
   if(req.params.userId in students) {
     for(experiment in experiments) {
-      if(listcontains(experiments[experiment].requirements.split(','), students[req.params.userId].requirements.split(',')) && !found && (experiments[experiment].maxParticipants > experiments[experiment].participants.length) && experiments[experiment].participants.indexOf(req.params.userId) < 0){
-        response['expid'] = experiment;
+      if(listcontains(experiments[experiment].requirements.split(','), students[req.params.userId].requirements.split(',')) && !found && (experiments[experiment].maxParticipants > experiments[experiment].participants.length) && (experiments[experiment].participants.indexOf(req.params.userId) < 0) && teachers[experiments[experiment].authorId].university.localeCompare(students[req.params.userId].university)==0){
+        addExperimentToResponse(response,expid,"");
         response['searchStatus'] = '1';
         found = true;
       }
