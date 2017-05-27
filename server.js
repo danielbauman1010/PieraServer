@@ -23,6 +23,14 @@ class Student {
     currentId = currentId + 1;
     this.university = university;
   }
+
+  grade() {
+    var score = 0;
+    for(expid in this.gradedExperiments) {
+      score += this.gradedExperiments[expid];
+    }
+    return score;
+  }
 }
 
 class Admin {
@@ -85,6 +93,7 @@ var teacherUCodes = {};
 var adminUCodes = {}
 var experiments = {};
 var uniadmins = {}; //uniname: adminId
+var allrequirements = [];
 
 function login(email,password,ucode) {
   if(ucode in studentUCodes) {
@@ -114,7 +123,7 @@ function login(email,password,ucode) {
 }
 
 function notEmpty(value) {
-  return value.localeCompare != 0;
+  return value.length > 0;
 }
 
 function listcontains(check,cont) {
@@ -297,6 +306,8 @@ server.post('/signin', function(req,res) {
     response['loginStatus'] = '1';
     response = addUserToResponse(response,students[loginResult.userId],"");
     response['userType'] = 'Student';
+    response['requirements'] = ''+allrequirements;
+    response['grade'] = loginResult.grade();
   } else if(loginResult instanceof Teacher) {
     response['loginStatus'] = '1';
     response = addUserToResponse(response,teachers[loginResult.userId],"");
@@ -315,12 +326,17 @@ server.post('/signin', function(req,res) {
 server.post('/createexperiment', function(req,res) {
   console.log(req.body);
   var expData = req.body;
-  const newExp = new Experiment(expData.expname, expData.time, expData.timeToComplete, expData.explocation, expData.descript, expData.objective, expData.maxParticipants, expData.requirements, expData.authorID)
   var response = {};
   if(expData.authorID in teachers) {
+    const newExp = new Experiment(expData.expname, expData.time, expData.timeToComplete, expData.explocation, expData.descript, expData.objective, expData.maxParticipants, expData.requirements, expData.authorID)
     experiments[newExp.expid] = newExp
     teachers[expData.authorID].experiments.push(newExp.expid)
     console.log(newExp);
+    if(notEmpty(newExp.requirements)) {
+      for(requirement in newExp.requirements.split(',')){
+        allrequirements.push(newExp.requirements[requirement]);
+      }
+    }
     response = {"createStatus": "1"};
     response = addExperimentToResponse(response, newExp, "");
   } else {
@@ -379,10 +395,7 @@ server.get('/requirements', function(req,res) {
   var response = {"requirements": ""};
   console.log("/requirements request made")
   var requirements = [];
-  for(experiment in experiments) {
-    requirements.push(experiments[experiment].requirements)
-  }
-  response["requirements"] = ""+requirements.filter(notEmpty)
+  response["requirements"] = ""+allrequirements;
   console.log(response["requirements"])
   res.header("Content-Type",'application/json');
   res.send(JSON.stringify(response, null, 4));
@@ -393,7 +406,8 @@ server.get('/studentrequirements/:id', function(req,res) {
   var response = {"requirements": ""};
   console.log(console.log(req.params.id));
   if(req.params.id in students) {
-    response["requirements"] = students[req.params.id].requirements;
+    response["requirements"] = ''+students[req.params.id].requirements;
+    response["allrequirements"] = ''+allrequirements;
     response["getStatus"] = "1";
   } else {
     response["getStatus"] = "0";
@@ -496,6 +510,23 @@ server.post('/gradestudent', function(req,res) {
   res.send(JSON.stringify(response, null, 4));
 })
 
+sever.get('/participants/:expid', function(req,res) {
+  var response = {'getStatus': '0'};
+  if(req.params.expid in experiments) {
+    response['getStatus'] = '1';
+    if(notEmpty(experiments[req.params.expid].participants)) {
+      for(studentId in experiments[req.params.expid].participants.split(',').filter(notEmpty)) {
+        var counter = 0;
+        if(studentId in students) {
+          response = addUserToResponse(response, students[studentId], counter);
+          counter = counter + 1;
+        }
+      }
+    }
+  }
+  res.header("Content-Type",'application/json');
+  res.send(JSON.stringify(response, null, 4));
+})
 
 //http.createServer(server).listen(80);
 https.createServer(sslOptions, server).listen(443);
