@@ -510,7 +510,7 @@ server.post('/gradestudent', function(req,res) {
   res.send(JSON.stringify(response, null, 4));
 })
 
-sever.get('/participants/:expid', function(req,res) {
+server.get('/participants/:expid', function(req,res) {
   var response = {'getStatus': '0'};
   if(req.params.expid in experiments) {
     response['getStatus'] = '1';
