@@ -449,7 +449,7 @@ server.get('/searchforexperiments/:userId', function(req,res){
   if(req.params.userId in students) {
     for(experiment in experiments) {
       if(listcontains(experiments[experiment].requirements.split(','), students[req.params.userId].requirements.split(',')) && !found && (experiments[experiment].maxParticipants > experiments[experiment].participants.length) && (experiments[experiment].participants.indexOf(req.params.userId) < 0) && teachers[experiments[experiment].authorId].university.localeCompare(students[req.params.userId].university)==0){
-        addExperimentToResponse(response,expid,"");
+        addExperimentToResponse(response,experiments[experiment],"");
         response['searchStatus'] = '1';
         found = true;
       }
