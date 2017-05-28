@@ -26,8 +26,8 @@ class Student {
 
   grade() {
     var score = 0;
-    for(expid in this.gradedExperiments) {
-      score += this.gradedExperiments[expid];
+    for(var exp in this.gradedExperiments) {
+      score += this.gradedExperiments[exp];
     }
     return score;
   }
