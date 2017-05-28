@@ -342,7 +342,7 @@ server.post('/createexperiment', function(req,res) {
     console.log(newExp);
     if(notEmpty(newExp.requirements)) {
       for(requirement in newExp.requirements.split(',')){
-        allrequirements.push(newExp.requirements[requirement]);
+        allrequirements.push(newExp.requirements.split(',')[requirement]);
       }
     }
     response = {"createStatus": "1"};
