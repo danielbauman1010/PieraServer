@@ -69,7 +69,7 @@ function removeFromArr(arr,val) {
 }
 
 class Experiment {
-  constructor(expname, time, timeToComplete, explocation, descript, objective, maxParticipants, requirements, authorId) {
+  constructor(expname, time, timeToComplete, explocation, descript, objective, maxParticipants, requirements, authorId, credit) {
     this.expid = currentId;
     currentId = currentId + 1;
     this.expname = expname
@@ -82,6 +82,7 @@ class Experiment {
     this.requirements = requirements;
     this.participants = [];
     this.authorId = authorId;
+    this.credit = credit;
     this.open = true;
   }
 }
@@ -193,8 +194,6 @@ server.get('/',function(req,res) {
   console.log('request made.');
   res.end("PIERA\nUse the app!");
 });
-
-
 
 server.get('/student/:userId', function(req,res) {
   var response = {'getStatus': '0'};
@@ -337,7 +336,7 @@ server.post('/createexperiment', function(req,res) {
   var expData = req.body;
   var response = {};
   if(expData.authorID in teachers) {
-    const newExp = new Experiment(expData.expname, expData.time, expData.timeToComplete, expData.explocation, expData.descript, expData.objective, expData.maxParticipants, expData.requirements, expData.authorID)
+    const newExp = new Experiment(expData.expname, expData.time, expData.timeToComplete, expData.explocation, expData.descript, expData.objective, expData.maxParticipants, expData.requirements, expData.authorID, expData.credit)
     experiments[newExp.expid] = newExp
     teachers[expData.authorID].experiments.push(newExp.expid);
     console.log(newExp);
@@ -536,20 +535,22 @@ server.post('/gradestudents', function(req,res) {
   if(notEmpty(req.body.failedids)){
     failedids = req.body.failedids.split(',');
   }
-  for(var studentId in passedids) {
+  for(var studentIdIndex in passedids) {
+    var studentId = passedids[studentIdIndex];
     if(studentId in students) {
-      if(students[passedids[studentId]].experiments.indexOf(req.body.expid) >= 0) {
-        students[passedids[studentId]].gradedExperiments[req.body.expid] = 1;
-        students[passedids[studentId]].experiments = removeFromArr(students[passedids[studentId]].experiments, req.body.expid);
+      if(students[studentId].experiments.indexOf(req.body.expid) >= 0) {
+        students[studentId].gradedExperiments[req.body.expid] = experiments[req.body.expid].credit;
+        students[studentId].experiments = removeFromArr(students[studentId].experiments, req.body.expid);
         response['gradeStatus'] = '1';
       }
     }
   }
-  for(var studentId in failedids) {
+  for(var studentIdIndex in failedids) {
+    var studentId = failedids[studentIdIndex];
     if(studentId in students) {
-      if(students[failedids[studentId]].experiments.indexOf(req.body.expid) >= 0) {
-        students[failedids[studentId]].gradedExperiments[req.body.expid] = 0;
-        students[failedids[studentId]].experiments = removeFromArr(students[studentId].experiments, req.body.expid);
+      if(students[studentId].experiments.indexOf(req.body.expid) >= 0) {
+        students[studentId].gradedExperiments[req.body.expid] = (-1)*number(admins[uniadmins[students[studentId].university]].penalty);
+        students[studentId].experiments = removeFromArr(students[studentId].experiments, req.body.expid);
         response['gradeStatus'] = '1';
       }
     }
