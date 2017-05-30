@@ -552,7 +552,7 @@ server.post('/gradestudents', function(req,res) {
     var studentId = failedids[studentIdIndex];
     if(studentId in students) {
       if(students[studentId].experiments.indexOf(req.body.expid) >= 0) {
-        students[studentId].gradedExperiments[req.body.expid] = (-1)*number(admins[uniadmins[students[studentId].university]].penalty);
+        students[studentId].gradedExperiments[req.body.expid] = admins[uniadmins[students[studentId].university]].penalty;
         students[studentId].experiments = removeFromArr(students[studentId].experiments, req.body.expid);
         response['gradeStatus'] = '1';
       }
