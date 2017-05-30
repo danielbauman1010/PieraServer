@@ -551,6 +551,7 @@ server.post('/gradestudents', function(req,res) {
         students[studentId].experiments = removeFromArr(students[studentId].experiments, req.body.expid);
         response['gradeStatus'] = '1';
       }
+    }
   }
   console.log(response);
   res.header("Content-Type",'application/json');
