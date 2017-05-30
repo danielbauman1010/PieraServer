@@ -543,6 +543,7 @@ server.post('/gradestudents', function(req,res) {
         students[passedids[studentId]].experiments = removeFromArr(students[passedids[studentId]].experiments, req.body.expid);
         response['gradeStatus'] = '1';
       }
+    }
   }
   for(var studentId in failedids) {
     if(studentId in students) {
