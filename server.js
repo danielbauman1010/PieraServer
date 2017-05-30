@@ -315,6 +315,7 @@ server.post('/signin', function(req,res) {
     response['loginStatus'] = '1';
     response = addUserToResponse(response,students[loginResult.userId],"");
     response['userType'] = 'Student';
+    console.log("I got here..")
     response['grade'] = loginResult.grade();
   } else if(loginResult instanceof Teacher) {
     response['loginStatus'] = '1';
@@ -542,7 +543,7 @@ server.post('/gradestudents', function(req,res) {
     var studentId = passedids[studentIdIndex];
     if(studentId in students) {
       if(students[studentId].experiments.indexOf(req.body.expid) >= 0) {
-        students[studentId].gradedExperiments[req.body.expid] = experiments[req.body.expid].credit;
+        students[studentId].gradedExperiments[req.body.expid] = Number(experiments[req.body.expid].credit);
         students[studentId].experiments = removeFromArr(students[studentId].experiments, req.body.expid);
         response['gradeStatus'] = '1';
       }
@@ -552,7 +553,7 @@ server.post('/gradestudents', function(req,res) {
     var studentId = failedids[studentIdIndex];
     if(studentId in students) {
       if(students[studentId].experiments.indexOf(req.body.expid) >= 0) {
-        students[studentId].gradedExperiments[req.body.expid] = admins[uniadmins[students[studentId].university]].penalty;
+        students[studentId].gradedExperiments[req.body.expid] = Number(admins[uniadmins[students[studentId].university]].penalty);
         students[studentId].experiments = removeFromArr(students[studentId].experiments, req.body.expid);
         response['gradeStatus'] = '1';
       }
