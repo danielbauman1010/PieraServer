@@ -382,8 +382,8 @@ server.get('/teacherhistory/:id', function(req,res) {
     response["getStatus"] = "1";
     var exps = teachers[req.params.id].experiments;
     for(experiment in exps) {
-      if(exps[experiment].open == false) {
-        response = addExperimentToResponse(response,experiments[experiment],experiment+"");
+      if(experiments[exps[experiment]].open == false) {
+        response = addExperimentToResponse(response,experiments[exps[experiment]],experiment+"");
       }
     }
   } else {
@@ -413,7 +413,7 @@ server.get('/studenthistory/:userId', function(req,res) {
     var counter = 0;
     for(e in students[req.params.userId].gradedExperiments) {
       response = addExperimentToResponse(response, experiments[e], counter);
-      response[counter+"grade"] = students[req.params.userId].gradedExperiments[e];
+      response[counter+"grade"] = students[req.params.userId].gradedExperiments[e]+"";
       counter = counter + 1;
     }
   }
