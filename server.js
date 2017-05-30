@@ -362,9 +362,11 @@ server.get('/teacherexperiments/:id', function(req,res) {
   if(req.params.id in teachers) {
     response["getStatus"] = "1";
     var exps = teachers[req.params.id].experiments;
+    var counter = 0;
     for(experiment in exps) {
       if(experiments[exps[experiment]].open) {
-        response = addExperimentToResponse(response,experiments[exps[experiment]],experiment+"");
+        response = addExperimentToResponse(response,experiments[exps[experiment]],counter+"");
+        counter = counter + 1;
       }
     }
   } else {
@@ -381,9 +383,11 @@ server.get('/teacherhistory/:id', function(req,res) {
   if(req.params.id in teachers) {
     response["getStatus"] = "1";
     var exps = teachers[req.params.id].experiments;
+    var counter = 0;
     for(experiment in exps) {
       if(experiments[exps[experiment]].open == false) {
-        response = addExperimentToResponse(response,experiments[exps[experiment]],experiment+"");
+        response = addExperimentToResponse(response,experiments[exps[experiment]],counter+"");
+        counter = counter + 1;
       }
     }
   } else {
