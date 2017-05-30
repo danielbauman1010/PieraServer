@@ -547,9 +547,9 @@ server.post('/gradestudents', function(req,res) {
   }
   for(var studentId in failedids) {
     if(studentId in students) {
-      if(students[studentId].experiments.indexOf(req.body.expid) >= 0) {
-        students[studentId].gradedExperiments[req.body.expid] = 0;
-        students[studentId].experiments = removeFromArr(students[studentId].experiments, req.body.expid);
+      if(students[failedids[studentId]].experiments.indexOf(req.body.expid) >= 0) {
+        students[failedids[studentId]].gradedExperiments[req.body.expid] = 0;
+        students[failedids[studentId]].experiments = removeFromArr(students[studentId].experiments, req.body.expid);
         response['gradeStatus'] = '1';
       }
     }
