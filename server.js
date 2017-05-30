@@ -535,6 +535,9 @@ server.post('/gradestudents', function(req,res) {
   if(notEmpty(req.body.failedids)){
     failedids = req.body.failedids.split(',');
   }
+  if(req.body.expid in experiments) {
+    experiments[req.body.expid].open = false;
+  }
   for(var studentIdIndex in passedids) {
     var studentId = passedids[studentIdIndex];
     if(studentId in students) {
