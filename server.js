@@ -53,7 +53,7 @@ class Teacher {
     this.password = password;
     this.email = email;
     this.userId = currentId;
-    this.experiments = []
+    this.experiments = [];
     currentId = currentId + 1;
     this.university = university;
   }
@@ -82,6 +82,7 @@ class Experiment {
     this.requirements = requirements;
     this.participants = [];
     this.authorId = authorId;
+    this.open = true;
   }
 }
 
@@ -338,7 +339,7 @@ server.post('/createexperiment', function(req,res) {
   if(expData.authorID in teachers) {
     const newExp = new Experiment(expData.expname, expData.time, expData.timeToComplete, expData.explocation, expData.descript, expData.objective, expData.maxParticipants, expData.requirements, expData.authorID)
     experiments[newExp.expid] = newExp
-    teachers[expData.authorID].experiments.push(newExp.expid)
+    teachers[expData.authorID].experiments.push(newExp.expid);
     console.log(newExp);
     if(notEmpty(newExp.requirements)) {
       for(requirement in newExp.requirements.split(',')){
@@ -362,7 +363,28 @@ server.get('/teacherexperiments/:id', function(req,res) {
     response["getStatus"] = "1";
     var exps = teachers[req.params.id].experiments;
     for(experiment in exps) {
-      response = addExperimentToResponse(response,experiments[exps[experiment]],experiment+"");
+      if(exps[experiment].open) {
+        response = addExperimentToResponse(response,experiments[experiment],experiment+"");
+      }
+    }
+  } else {
+    response["getStatus"] = "0"
+  }
+  res.header("Content-Type",'application/json');
+  res.send(JSON.stringify(response, null, 4));
+})
+
+server.get('/teacherhistory/:id', function(req,res) {
+  var response = {};
+  console.log(experiments);
+  console.log(req.params.id);
+  if(req.params.id in teachers) {
+    response["getStatus"] = "1";
+    var exps = teachers[req.params.id].experiments;
+    for(experiment in exps) {
+      if(exps[experiment].open == false) {
+        response = addExperimentToResponse(response,experiments[experiment],experiment+"");
+      }
     }
   } else {
     response["getStatus"] = "0"
@@ -504,19 +526,36 @@ server.post('/updatecredits', function(req,res) {
   res.send(JSON.stringify(response, null, 4));
 })
 
-server.post('/gradestudent', function(req,res) {
+server.post('/gradestudents', function(req,res) {
   var response = {'gradeStatus': '0'};
-  if(req.body.userId in students) {
-    if(students[req.body.userId].experiments.indexOf(req.body.expid) >= 0) {
-      students[req.body.userId].gradedExperiments[req.body.expid] = req.body.grade;
-      students[req.body.userId].experiments = removeFromArr(students[req.body.userId].experiments, req.body.expid);
-      response['gradeStatus'] = '1';
-    }
+  var passedids = [];
+  if(notEmpty(req.body.passedids)){
+    passedids = req.body.passedids.split(',');
+  }
+  var failedids = [];
+  if(notEmpty(req.body.failedids)){
+    failedids = req.body.failedids.split(',');
+  }
+  for(var studentId in passedids) {
+    if(studentId in students) {
+      if(students[passedids[studentId]].experiments.indexOf(req.body.expid) >= 0) {
+        students[passedids[studentId]].gradedExperiments[req.body.expid] = 1;
+        students[passedids[studentId]].experiments = removeFromArr(students[passedids[studentId]].experiments, req.body.expid);
+        response['gradeStatus'] = '1';
+      }
+  }
+  for(var studentId in failedids) {
+    if(studentId in students) {
+      if(students[studentId].experiments.indexOf(req.body.expid) >= 0) {
+        students[studentId].gradedExperiments[req.body.expid] = 0;
+        students[studentId].experiments = removeFromArr(students[studentId].experiments, req.body.expid);
+        response['gradeStatus'] = '1';
+      }
   }
   console.log(response);
   res.header("Content-Type",'application/json');
   res.send(JSON.stringify(response, null, 4));
-})
+});
 
 server.get('/participants/:expid', function(req,res) {
   var response = {'getStatus': '0'};
