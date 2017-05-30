@@ -316,7 +316,7 @@ server.post('/signin', function(req,res) {
     response = addUserToResponse(response,students[loginResult.userId],"");
     response['userType'] = 'Student';
     console.log("I got here..")
-    response['grade'] = loginResult.grade();
+    response['grade'] = loginResult.grade()+"";
   } else if(loginResult instanceof Teacher) {
     response['loginStatus'] = '1';
     response = addUserToResponse(response,teachers[loginResult.userId],"");
