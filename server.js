@@ -362,8 +362,8 @@ server.get('/teacherexperiments/:id', function(req,res) {
     response["getStatus"] = "1";
     var exps = teachers[req.params.id].experiments;
     for(experiment in exps) {
-      if(exps[experiment].open) {
-        response = addExperimentToResponse(response,experiments[experiment],experiment+"");
+      if(experiments[exps[experiment]].open) {
+        response = addExperimentToResponse(response,experiments[exps[experiment]],experiment+"");
       }
     }
   } else {
