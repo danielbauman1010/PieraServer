@@ -555,7 +555,7 @@ server.post('/gradestudents', function(req,res) {
   console.log(response);
   res.header("Content-Type",'application/json');
   res.send(JSON.stringify(response, null, 4));
-});
+})
 
 server.get('/participants/:expid', function(req,res) {
   var response = {'getStatus': '0'};
