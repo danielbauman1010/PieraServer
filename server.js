@@ -179,6 +179,7 @@ function addExperimentToResponse(response,experiment,counter) {
   response[counter+"expid"] = ""+experiment.expid;
   response[counter+"authorId"] = ""+experiment.authorId;
   response[counter+"author"] = teachers[experiment.authorId].username+"";
+  response[counter+"email"] = teachers[experiment.authorId].email+"";
   response[counter+"participants"] = experiment.participants+"";
   return response;
 }
