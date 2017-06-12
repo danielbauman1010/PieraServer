@@ -590,7 +590,7 @@ server.get('/participants/:expid', function(req,res) {
 })
 
 server.post('/sendmessage', function(req,res) {
-  var response = ['sendStatus': '0'];
+  var response = {'sendStatus': '0'};
   if(req.body.authorId in teachers) {
     if(req.body.recieverId in students) {
       students[req.body.recieverId].messages[req.body.authorId] = req.body.message;
@@ -610,7 +610,7 @@ server.post('/sendmessage', function(req,res) {
 })
 
 server.get('/messages/:userId', function(req,res) {
-  var response = ['getStatus': '0'];
+  var response = {'getStatus': '0'};
   if(req.body.userId in teachers) {
     if(Object.keys(teachers[req.body.userId].messages).length > 0) {
       var counter = 0;
