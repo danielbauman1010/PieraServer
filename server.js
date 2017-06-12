@@ -600,14 +600,14 @@ server.post('/sendmessage', function(req,res) {
   var response = {'sendStatus': '0'};
   if(req.body.authorId in teachers) {
     if(req.body.recieverId in students) {
-      students[req.body.recieverId].messages.append(new Message(req.body.authorId,req.body.message));
+      students[req.body.recieverId].messages.push(new Message(req.body.authorId,req.body.message));
       response['sendStatus'] = '1';
     }
   }
 
   if(req.body.authorId in students) {
     if(req.body.recieverId in teachers) {
-      teachers[req.body.recieverId].messages.append(new Message(req.body.authorId,req.body.message));
+      teachers[req.body.recieverId].messages.push(new Message(req.body.authorId,req.body.message));
       response['sendStatus'] = '1';
     }
   }
