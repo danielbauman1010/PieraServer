@@ -611,10 +611,10 @@ server.post('/sendmessage', function(req,res) {
 
 server.get('/messages/:userId', function(req,res) {
   var response = {'getStatus': '0'};
-  if(req.body.userId in teachers) {
-    if(Object.keys(teachers[req.body.userId].messages).length > 0) {
+  if(req.params.userId in teachers) {
+    if(Object.keys(teachers[req.params.userId].messages).length > 0) {
       var counter = 0;
-      for(author in teachers[req.body.userId].messages) {
+      for(author in teachers[req.params.userId].messages) {
         response[counter+"author"] = ""+students[author].username;
         response[counter+"message"] = ""+message;
         counter = counter + 1;
@@ -623,10 +623,10 @@ server.get('/messages/:userId', function(req,res) {
     }
   }
 
-  if(req.body.userId in students) {
-    if(Object.keys(students[req.body.userId].messages).length > 0) {
+  if(req.params.userId in students) {
+    if(Object.keys(students[req.params.userId].messages).length > 0) {
       var counter = 0;
-      for(author in students[req.body.userId].messages) {
+      for(author in students[req.params.userId].messages) {
         response[counter+"author"] = ""+teachers[author].username;
         response[counter+"message"] = ""+message;
         counter = counter + 1;
