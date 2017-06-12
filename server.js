@@ -17,11 +17,12 @@ class Student {
     this.password = password;
     this.email = email;
     this.userId = currentId;
-    this.requirements = ""
-    this.experiments = []
-    this.gradedExperiments = {} //dict: [expid: grade]
+    this.requirements = "";
+    this.experiments = [];
+    this.gradedExperiments = {}; //dict: [expid: grade]
     currentId = currentId + 1;
     this.university = university;
+    this.messages = {}; //dict [authorid: Message]
   }
 
   grade() {
@@ -56,6 +57,7 @@ class Teacher {
     this.experiments = [];
     currentId = currentId + 1;
     this.university = university;
+    this.messages = {}; //dict [authorid: Message]
   }
 }
 
@@ -583,6 +585,56 @@ server.get('/participants/:expid', function(req,res) {
       }
     }
   }
+  res.header("Content-Type",'application/json');
+  res.send(JSON.stringify(response, null, 4));
+})
+
+server.post('/sendmessage', function(req,res) {
+  var response = ['sendStatus': '0'];
+  if(req.body.authorId in teachers) {
+    if(req.body.recieverId in students) {
+      students[req.body.recieverId].messages[req.body.authorId] = req.body.message;
+      response['sendStatus'] = '1';
+    }
+  }
+
+  if(req.body.authorId in students) {
+    if(req.body.recieverId in teachers) {
+      teachers[req.body.recieverId].messages[req.body.authorId] = req.body.message;
+      response['sendStatus'] = '1';
+    }
+  }
+
+  res.header("Content-Type",'application/json');
+  res.send(JSON.stringify(response, null, 4));
+})
+
+server.get('/messages/:userId', function(req,res) {
+  var response = ['getStatus': '0'];
+  if(req.body.userId in teachers) {
+    if(Object.keys(teachers[req.body.userId].messages).length > 0) {
+      var counter = 0;
+      for(author in teachers[req.body.userId].messages) {
+        response[counter+"author"] = ""+author;
+        response[counter+"message"] = ""+message;
+        counter = counter + 1;
+      }
+      response['getStatus'] = '1';
+    }
+  }
+
+  if(req.body.userId in students) {
+    if(Object.keys(students[req.body.userId].messages).length > 0) {
+      var counter = 0;
+      for(author in students[req.body.userId].messages) {
+        response[counter+"author"] = ""+author;
+        response[counter+"message"] = ""+message;
+        counter = counter + 1;
+      }
+      response['getStatus'] = '1';
+    }
+  }
+
   res.header("Content-Type",'application/json');
   res.send(JSON.stringify(response, null, 4));
 })
