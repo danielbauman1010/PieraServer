@@ -615,7 +615,7 @@ server.get('/messages/:userId', function(req,res) {
     if(Object.keys(teachers[req.body.userId].messages).length > 0) {
       var counter = 0;
       for(author in teachers[req.body.userId].messages) {
-        response[counter+"author"] = ""+author;
+        response[counter+"author"] = ""+students[author].username;
         response[counter+"message"] = ""+message;
         counter = counter + 1;
       }
@@ -627,7 +627,7 @@ server.get('/messages/:userId', function(req,res) {
     if(Object.keys(students[req.body.userId].messages).length > 0) {
       var counter = 0;
       for(author in students[req.body.userId].messages) {
-        response[counter+"author"] = ""+author;
+        response[counter+"author"] = ""+teachers[author].username;
         response[counter+"message"] = ""+message;
         counter = counter + 1;
       }
