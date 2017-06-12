@@ -13,8 +13,8 @@ var currentId = 0;
 
 class Message{
   constructor(author, text) {
-    self.author = author;
-    self.text = text;
+    this.author = author;
+    this.text = text;
   }
 }
 
