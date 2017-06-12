@@ -622,8 +622,8 @@ server.get('/messages/:userId', function(req,res) {
     if(teachers[req.params.userId].messages.length > 0) {
       var counter = 0;
       for(message in teachers[req.params.userId].messages) {
-        response[counter+"author"] = ""+students[message.author].username;
-        response[counter+"message"] = ""+message.text;
+        response[counter+"author"] = ""+students[teachers[req.params.userId].messages[message].author].username;
+        response[counter+"message"] = ""+teachers[req.params.userId].messages[message].text;
         counter = counter + 1;
       }
       response['getStatus'] = '1';
@@ -634,8 +634,8 @@ server.get('/messages/:userId', function(req,res) {
     if(students[req.params.userId].messages.length > 0) {
       var counter = 0;
       for(message in students[req.params.userId].messages) {
-        response[counter+"author"] = ""+teachers[message.author].username;
-        response[counter+"message"] = ""+message.text;
+        response[counter+"author"] = ""+teachers[students[req.params.userId].messages[message].author].username;
+        response[counter+"message"] = ""+students[req.params.userId].messages[message].text;
         counter = counter + 1;
       }
       response['getStatus'] = '1';
