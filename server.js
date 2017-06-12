@@ -11,6 +11,13 @@ server.use(express.static('public'));
 
 var currentId = 0;
 
+class Message{
+  constructor(author, text) {
+    self.author = author;
+    self.text = text;
+  }
+}
+
 class Student {
   constructor(username, password, email, university) {
     this.username = username;
@@ -22,7 +29,7 @@ class Student {
     this.gradedExperiments = {}; //dict: [expid: grade]
     currentId = currentId + 1;
     this.university = university;
-    this.messages = {}; //dict [authorid: Message]
+    this.messages = [];
   }
 
   grade() {
@@ -57,7 +64,7 @@ class Teacher {
     this.experiments = [];
     currentId = currentId + 1;
     this.university = university;
-    this.messages = {}; //dict [authorid: Message]
+    this.messages = [];
   }
 }
 
@@ -593,14 +600,14 @@ server.post('/sendmessage', function(req,res) {
   var response = {'sendStatus': '0'};
   if(req.body.authorId in teachers) {
     if(req.body.recieverId in students) {
-      students[req.body.recieverId].messages[req.body.authorId] = req.body.message;
+      students[req.body.recieverId].messages.append(new Message(req.body.authorId,req.body.message));
       response['sendStatus'] = '1';
     }
   }
 
   if(req.body.authorId in students) {
     if(req.body.recieverId in teachers) {
-      teachers[req.body.recieverId].messages[req.body.authorId] = req.body.message;
+      teachers[req.body.recieverId].messages.append(new Message(req.body.authorId,req.body.message));
       response['sendStatus'] = '1';
     }
   }
@@ -612,11 +619,11 @@ server.post('/sendmessage', function(req,res) {
 server.get('/messages/:userId', function(req,res) {
   var response = {'getStatus': '0'};
   if(req.params.userId in teachers) {
-    if(Object.keys(teachers[req.params.userId].messages).length > 0) {
+    if(teachers[req.params.userId].messages.length > 0) {
       var counter = 0;
-      for(author in teachers[req.params.userId].messages) {
-        response[counter+"author"] = ""+students[author].username;
-        response[counter+"message"] = ""+teachers[req.params.userId].messages[author];
+      for(message in teachers[req.params.userId].messages) {
+        response[counter+"author"] = ""+students[message.author].username;
+        response[counter+"message"] = ""+message.text;
         counter = counter + 1;
       }
       response['getStatus'] = '1';
@@ -624,11 +631,11 @@ server.get('/messages/:userId', function(req,res) {
   }
 
   if(req.params.userId in students) {
-    if(Object.keys(students[req.params.userId].messages).length > 0) {
+    if(students[req.params.userId].messages.length > 0) {
       var counter = 0;
-      for(author in students[req.params.userId].messages) {
-        response[counter+"author"] = ""+teachers[author].username;
-        response[counter+"message"] = ""+students[req.params.userId].messages[author];
+      for(message in students[req.params.userId].messages) {
+        response[counter+"author"] = ""+teachers[message.author].username;
+        response[counter+"message"] = ""+message.text;
         counter = counter + 1;
       }
       response['getStatus'] = '1';
