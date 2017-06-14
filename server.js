@@ -637,7 +637,7 @@ server.get('/messages/:userId', function(req,res) {
       for(message in students[req.params.userId].messages) {
         response[counter+"author"] = ""+teachers[students[req.params.userId].messages[message].author].username;
         response[counter+"message"] = ""+students[req.params.userId].messages[message].text;
-        reponse[counter+"authorId"] = ""+students[req.params.userId].messages[message].author;
+        response[counter+"authorId"] = ""+students[req.params.userId].messages[message].author;
         counter = counter + 1;
       }
       response['getStatus'] = '1';
