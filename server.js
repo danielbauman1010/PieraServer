@@ -11,74 +11,131 @@ server.use(express.static('public'));
 
 var currentId = 0;
 
+class Message{
+  constructor(author, text) {
+    this.author = author;
+    this.text = text;
+  }
+}
+
 class Student {
-  constructor(username, password, email, bio, classesEnrolled, interests) {
+  constructor(username, password, email, university) {
     this.username = username;
     this.password = password;
     this.email = email;
-    this.bio = bio;
-    this.classesEnrolled = classesEnrolled;
-    this.interests = interests;
     this.userId = currentId;
-    this.requirements = ""
-    this.experiments = []
+    this.requirements = "";
+    this.experiments = [];
+    this.gradedExperiments = {}; //dict: [expid: grade]
     currentId = currentId + 1;
+    this.university = university;
+    this.messages = [];
+  }
+
+  grade() {
+    var score = 0;
+    for(var exp in this.gradedExperiments) {
+      score += this.gradedExperiments[exp];
+    }
+    return score;
+  }
+}
+
+class Admin {
+  constructor(username, password, email, university) {
+    this.username = username;
+    this.password = password;
+    this.email = email;
+    this.university = university;
+    this.pertime = 0.5;
+    this.required = 5.0;
+    this.penalty = 0.0;
+    this.userId = currentId;
+    currentId = currentId = 1;
   }
 }
 
 class Teacher {
-  constructor(username, password, email, bio, classesEnrolled) {
+  constructor(username, password, email, university) {
     this.username = username;
     this.password = password;
     this.email = email;
-    this.bio = bio;
-    this.classesEnrolled = classesEnrolled;
     this.userId = currentId;
-    this.experiments = []
+    this.experiments = [];
     currentId = currentId + 1;
+    this.university = university;
+    this.messages = [];
   }
 }
 
+function removeFromArr(arr,val) {
+  for(i in arr){
+    if(arr[i]==val) {
+      arr.splice(i,1)
+    }
+  }
+  return arr
+}
+
 class Experiment {
-  constructor(expname, time, explocation, descript, objective, maxParticipants, requirements, authorId) {
+  constructor(expname, time, timeToComplete, explocation, descript, objective, maxParticipants, requirements, authorId, credit) {
     this.expid = currentId;
     currentId = currentId + 1;
     this.expname = expname
     this.time = time;
+    this.timeToComplete = timeToComplete;
     this.explocation = explocation;
     this.descript = descript;
     this.objective = objective;
     this.maxParticipants = maxParticipants;
     this.requirements = requirements;
     this.participants = [];
-    this.authorId = authorId
+    this.authorId = authorId;
+    this.credit = credit;
+    this.open = true;
   }
 }
 
 var teachers = {};
 var students = {};
-var studentUCodes = {"1234": "MIT", "5678": "Harvard"};
-var teacherUCodes = {"4321": "MIT", "8765": "Harvard"};
+var admins = {};
+var studentUCodes = {}; //code: university name
+var teacherUCodes = {};
+var adminUCodes = {}
 var experiments = {};
+var uniadmins = {}; //uniname: adminId
+var allrequirements = [];
 
-function loginTeacher(email, password) {
-  for(teacher in teachers) {
-    if(teachers[teacher].email.localeCompare(email) == 0 && teachers[teacher].password.localeCompare(password) == 0) {
-      return teachers[teacher];
+function login(email,password,ucode) {
+  if(ucode in studentUCodes) {
+    for(student in students) {
+      if(students[student].email.localeCompare(email) == 0 && students[student].password.localeCompare(password) == 0) {
+        return students[student];
+      }
     }
+    return 0;
+  } else if(ucode in teacherUCodes) {
+    for(teacher in teachers) {
+      if(teachers[teacher].email.localeCompare(email) == 0 && teachers[teacher].password.localeCompare(password) == 0) {
+        return teachers[teacher];
+      }
+    }
+    return 0;
+  } else if(ucode in adminUCodes) {
+    for(admin in admins) {
+      if(admins[admin].email.localeCompare(email) == 0 && admins[admin].password.localeCompare(password) == 0) {
+        return admins[admin];
+      }
+    }
+    return 0;
+  } else {
+    return 0;
   }
-  return 0;
 }
 
-function loginStudent(email, password) {
-  for(student in students) {
-    if(students[student].email.localeCompare(email) == 0 && students[student].password.localeCompare(password) == 0) {
-      return students[student];
-    }
-  }
-  return 0;
+function notEmpty(value) {
+  return value.length > 0;
 }
-
 
 function listcontains(check,cont) {
     var result = true;
@@ -92,6 +149,49 @@ function listcontains(check,cont) {
     return result;
 }
 
+function generateucode() {
+    var text = "";
+    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+    for( var i=0; i < 7; i++ )
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+    return text;
+}
+
+function addUserToResponse(response,user,counter) {
+  response[counter+"userId"] = ""+user.userId;
+  response[counter+"username"] = ""+user.username;
+  response[counter+"email"] = ""+user.email;
+  response[counter+"university"] = ""+user.university;
+  if(user.university in uniadmins){
+    response[counter+'pertime'] = admins[uniadmins[user.university]].pertime+"";
+    response[counter+'required'] = admins[uniadmins[user.university]].required+"";
+    response[counter+'penalty'] = admins[uniadmins[user.university]].penalty+"";
+  } else {
+    response[counter+'pertime'] = 0.5+"";
+    response[counter+'required'] = 5.0+"";
+    response[counter+'penalty'] = 0.0+"";
+  }
+  return response;
+}
+
+function addExperimentToResponse(response,experiment,counter) {
+  response[counter+"expname"] = ""+experiment.expname;
+  response[counter+"time"] = ""+experiment.time;
+  response[counter+"timeToComplete"] = ""+experiment.timeToComplete;
+  response[counter+"explocation"] = ""+experiment.explocation;
+  response[counter+"descript"] = ""+experiment.descript;
+  response[counter+"objective"] = ""+experiment.objective;
+  response[counter+"maxParticipants"] = ""+experiment.maxParticipants;
+  response[counter+"requirements"] = ""+experiment.requirements;
+  response[counter+"expid"] = ""+experiment.expid;
+  response[counter+"authorId"] = ""+experiment.authorId;
+  response[counter+"author"] = teachers[experiment.authorId].username+"";
+  response[counter+"email"] = teachers[experiment.authorId].email+"";
+  response[counter+"participants"] = experiment.participants+"";
+  return response;
+}
 //SSL:
 //openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days XXX
 var sslOptions = {
@@ -102,80 +202,162 @@ var sslOptions = {
 
 server.get('/',function(req,res) {
   console.log('request made.');
-  res.end("This works.");
+  res.end("PIERA\nUse the app!");
 });
 
-server.post('/createstudent', function(req,res) {
-  console.log(req.body);
-  console.log("creating student")
-  var studentData = req.body;
-  var response;
-  if(studentData.ucode in studentUCodes) {
-    const newStudent = new Student(studentData.username, studentData.password, studentData.email, studentData.bio, studentData.classesEnrolled, studentData.interests);
-    students[newStudent.userId] = newStudent
-    response = {"userId": ""+newStudent.userId, "username": newStudent.username, "password": newStudent.password, "email": newStudent.email, "bio": newStudent.bio, "interests": newStudent.interests, "classesEnrolled": newStudent.classesEnrolled, "createStatus": "1"};
-    console.log(response)
-  } else {
-    response = {"createStatus": "0"}
+server.get('/student/:userId', function(req,res) {
+  var response = {'getStatus': '0'};
+  if(req.params.userId in students){
+    var student = students[req.params.userId];
+    response['getStatus'] = '1';
+    response = addUserToResponse(response,student,"");
   }
+  console.log(response);
   res.header("Content-Type",'application/json');
   res.send(JSON.stringify(response, null, 4));
-});
+})
 
-server.post('/createteacher', function(req,res) {
-  console.log(req.body);
-  var teacherData = req.body;
-  var response;
-  if(teacherData.ucode in teacherUCodes) {
-    const newTeacher = new Teacher(teacherData.username, teacherData.password, teacherData.email, teacherData.bio, teacherData.classesEnrolled);
-    teachers[newTeacher.userId] = newTeacher
-    response = {"userId": ""+newTeacher.userId, "username": newTeacher.username, "password": newTeacher.password, "email": newTeacher.email, "bio": newTeacher.bio, "classesEnrolled": newTeacher.classesEnrolled, "createStatus": "1"};
-  } else {
-    response = {"createStatus": "0"}
+server.get('/teacher/:userId', function(req,res) {
+  var response = {'getStatus': '0'};
+  if(req.params.userId in teachers){
+    var teacher = teachers[req.params.userId]
+    response['getStatus'] = '1';
+    response = addUserToResponse(response,teacher,"");
   }
   res.header("Content-Type",'application/json');
   res.send(JSON.stringify(response, null, 4));
 })
 
-server.post('/loginstudent', function(req, res) {
-  console.log(req.body);
-  var loginData = req.body;
-  const student = loginStudent(loginData.email, loginData.password);
-  if(student == 0){
-    const err = {"loginStatus": "0"};
-    res.header("Content-Type",'application/json');
-    res.send(JSON.stringify(err, null, 4));
-  } else {
-    var response = {"userId": ""+student.userId, "username": student.username, "password": student.password, "email": student.email, "bio": student.bio, "interests": student.interests, "classesEnrolled": student.classesEnrolled, "loginStatus": "1"};
-    res.header("Content-Type",'application/json');
-    res.send(JSON.stringify(response, null, 4));
+server.get('/admin/:userId', function(req,res) {
+  var response = {'getStatus': '0'};
+  if(req.params.userId in admins){
+    var admin = admins[req.params.userId];
+    response['getStatus'] = '1';
+    response = addUserToResponse(response,admin,"");
   }
+  res.header("Content-Type",'application/json');
+  res.send(JSON.stringify(response, null, 4));
+})
+
+server.get('/experiment/:expid', function(req,res) {
+  var response = {'getStatus': '0'};
+  if(req.params.expid in experiments){
+    var experiment = experiments[req.params.expid];
+    response = addExperimentToResponse(response,experiment, "");
+    response["getStatus"] = "1";
+  }
+  res.header("Content-Type",'application/json');
+  res.send(JSON.stringify(response, null, 4));
 });
 
-server.post('/loginteacher', function(req, res) {
-  console.log(req.body);
-  var loginData = req.body;
-  const teacher = loginTeacher(loginData.email, loginData.password);
-  if(teacher == 0){
-    const err = {"loginStatus": "0"};
-    res.header("Content-Type",'application/json');
-    res.send(JSON.stringify(err, null, 4));
-  } else {
-    var response = {"userId": ""+teacher.userId, "username": teacher.username, "password": teacher.password, "email": teacher.email, "bio": teacher.bio, "classesEnrolled": teacher.classesEnrolled, "loginStatus": "1"};
-    res.header("Content-Type",'application/json');
-    res.send(JSON.stringify(response, null, 4));
+server.get('/generateucodes/:uniname', function(req,res) {
+  var response = {};
+  var exists = false;
+  for(uni in adminUCodes) {
+    if(adminUCodes[uni].localeCompare(req.params.uniname) == 0) {
+      exists = true;
+    }
   }
-});
+  if(exists){
+    response['generateStatus'] = '0';
+  } else {
+    var studentCode = generateucode();
+    while(studentCode in studentUCodes){
+      studentCode = generateucode();
+    }
+    response['studentucode'] = ""+studentCode;
+
+    var teacherCode = generateucode();
+    while(teacherCode in teacherUCodes){
+      teacherCode = generateucode();
+    }
+    response['teacherucode'] = ""+teacherCode;
+
+    var adminCode = generateucode();
+    while(adminCode in adminUCodes){
+      adminCode = generateucode();
+    }
+    response['adminucode'] = ""+adminCode;
+
+    studentUCodes[studentCode] = req.params.uniname
+    teacherUCodes[teacherCode] = req.params.uniname
+    adminUCodes[adminCode] = req.params.uniname
+
+    response['generateStatus'] = '1';
+  }
+
+  res.header("Content-Type",'application/json');
+  res.send(JSON.stringify(response, null, 4));
+})
+
+server.post('/signup', function(req,res) {
+  var data = req.body;
+  console.log(data);
+  var response = {'createStatus': '0'};
+  if(data.ucode in studentUCodes) {
+    var newStudent = new Student(data.username, data.password, data.email, studentUCodes[data.ucode]);
+    students[newStudent.userId] = newStudent
+    response = {"userType": "Student", "createStatus": "1"};
+    response = addUserToResponse(response, newStudent,"");
+  } else if(data.ucode in teacherUCodes) {
+    var newTeacher = new Teacher(data.username, data.password, data.email, teacherUCodes[data.ucode]);
+    teachers[newTeacher.userId] = newTeacher
+    response = {"userType": "Teacher", "createStatus": "1"};
+    response = addUserToResponse(response, newTeacher,"");
+  } else if(data.ucode in adminUCodes) {
+    if(!(adminUCodes[data.ucode] in uniadmins)) {
+      var newAdmin = new Admin(data.username, data.password, data.email, adminUCodes[data.ucode]);
+      admins[newAdmin.userId] = newAdmin;
+      uniadmins[adminUCodes[data.ucode]] = newAdmin.userId;
+      response = {"userType": "Admin", "createStatus": "1"};
+      response = addUserToResponse(response, newAdmin,"");
+    }
+  }
+  res.header("Content-Type",'application/json');
+  res.send(JSON.stringify(response, null, 4));
+})
+
+server.post('/signin', function(req,res) {
+  console.log(req.body);
+  const loginResult = login(req.body.email, req.body.password, req.body.ucode);
+  var response = {};
+  if(loginResult instanceof Student) {
+    response['loginStatus'] = '1';
+    response = addUserToResponse(response,students[loginResult.userId],"");
+    response['userType'] = 'Student';
+    console.log("I got here..")
+    response['grade'] = loginResult.grade()+"";
+  } else if(loginResult instanceof Teacher) {
+    response['loginStatus'] = '1';
+    response = addUserToResponse(response,teachers[loginResult.userId],"");
+    response['userType'] = 'Teacher';
+  } else if(loginResult instanceof Admin) {
+    response['loginStatus'] = '1';
+    response = addUserToResponse(response,admins[loginResult.userId],"");
+    response['userType'] = 'Admin';
+  } else {
+    response['loginStatus'] = '0';
+  }
+  res.header("Content-Type",'application/json');
+  res.send(JSON.stringify(response, null, 4));
+})
 
 server.post('/createexperiment', function(req,res) {
   console.log(req.body);
   var expData = req.body;
-  const newExp = new Experiment(expData.expname, expData.time, expData.explocation, expData.descript, expData.objective, expData.maxParticipants, expData.requirements, expData.authorID)
-  var response;
+  var response = {};
   if(expData.authorID in teachers) {
+    const newExp = new Experiment(expData.expname, expData.time, expData.timeToComplete, expData.explocation, expData.descript, expData.objective, expData.maxParticipants, expData.requirements, expData.authorID, expData.credit)
     experiments[newExp.expid] = newExp
-    console.log(newExp)
-    response = {"author": ""+teachers[expData.authorID].username, "expid": ""+newExp.expid, "createStatus": "1"}
+    teachers[expData.authorID].experiments.push(newExp.expid);
+    console.log(newExp);
+    if(notEmpty(newExp.requirements)) {
+      for(requirement in newExp.requirements.split(',')){
+        allrequirements.push(newExp.requirements.split(',')[requirement]);
+      }
+    }
+    response = {"createStatus": "1"};
+    response = addExperimentToResponse(response, newExp, "");
   } else {
     response = {"createStatus": "0"}
   }
@@ -185,27 +367,69 @@ server.post('/createexperiment', function(req,res) {
 
 server.get('/teacherexperiments/:id', function(req,res) {
   var response = {};
-  var counter = 0;
-  console.log(experiments)
-  console.log(req.params.id)
-  for(experiment in experiments) {
-    if(experiments[experiment].authorId == req.params.id) {
-      response["expname"+counter] = ""+experiments[experiment].expname
-      response["time"+counter] = ""+experiments[experiment].time
-      response["explocation"+counter] = ""+experiments[experiment].explocation
-      response["descript"+counter] = ""+experiments[experiment].descript
-      response["objective"+counter] = ""+experiments[experiment].objective
-      response["maxParticipants"+counter] = ""+experiments[experiment].maxParticipants
-      response["requirements"+counter] = ""+experiments[experiment].requirements
-      response["expid"+counter] = ""+experiment
-      response["participants"+counter] = ""+experiments[experiment].participants
-      counter = counter + 1
+  console.log(experiments);
+  console.log(req.params.id);
+  if(req.params.id in teachers) {
+    response["getStatus"] = "1";
+    var exps = teachers[req.params.id].experiments;
+    var counter = 0;
+    for(experiment in exps) {
+      if(experiments[exps[experiment]].open) {
+        response = addExperimentToResponse(response,experiments[exps[experiment]],counter+"");
+        counter = counter + 1;
+      }
     }
-  }
-  if(counter == 0) {
-    response["getStatus"] = "0"
   } else {
-    response["getStatus"] = "1"
+    response["getStatus"] = "0"
+  }
+  res.header("Content-Type",'application/json');
+  res.send(JSON.stringify(response, null, 4));
+})
+
+server.get('/teacherhistory/:id', function(req,res) {
+  var response = {};
+  console.log(experiments);
+  console.log(req.params.id);
+  if(req.params.id in teachers) {
+    response["getStatus"] = "1";
+    var exps = teachers[req.params.id].experiments;
+    var counter = 0;
+    for(experiment in exps) {
+      if(experiments[exps[experiment]].open == false) {
+        response = addExperimentToResponse(response,experiments[exps[experiment]],counter+"");
+        counter = counter + 1;
+      }
+    }
+  } else {
+    response["getStatus"] = "0"
+  }
+  res.header("Content-Type",'application/json');
+  res.send(JSON.stringify(response, null, 4));
+})
+
+server.get('/studentexperiments/:userId', function(req,res) {
+  var response = {};
+  response["getStatus"] = '0'
+  if(req.params.userId in students) {
+    for(exp in students[req.params.userId].experiments) {
+        response = addExperimentToResponse(response, experiments[students[req.params.userId].experiments[exp]],exp)
+    }
+    response["getStatus"] = '1'
+  }
+  res.header("Content-Type",'application/json');
+  res.send(JSON.stringify(response, null, 4));
+});
+
+server.get('/studenthistory/:userId', function(req,res) {
+  var response = {'getStatus': '0'};
+  if(req.params.userId in students) {
+    response['getStatus'] = '1';
+    var counter = 0;
+    for(e in students[req.params.userId].gradedExperiments) {
+      response = addExperimentToResponse(response, experiments[e], counter);
+      response[counter+"grade"] = students[req.params.userId].gradedExperiments[e]+"";
+      counter = counter + 1;
+    }
   }
   res.header("Content-Type",'application/json');
   res.send(JSON.stringify(response, null, 4));
@@ -214,14 +438,9 @@ server.get('/teacherexperiments/:id', function(req,res) {
 server.get('/requirements', function(req,res) {
   var response = {"requirements": ""};
   console.log("/requirements request made")
-  for(experiment in experiments) {
-    if(response["requirements"].localeCompare("") == 0) {
-      response["requirements"] = experiments[experiment].requirements
-    } else {
-      response["requirements"] = experiments[experiment].requirements + "," + response["requirements"];
-    }
-  }
-  console.log(res["requirements"])
+  var requirements = [];
+  response["requirements"] = ""+allrequirements;
+  console.log(response["requirements"])
   res.header("Content-Type",'application/json');
   res.send(JSON.stringify(response, null, 4));
 })
@@ -231,7 +450,8 @@ server.get('/studentrequirements/:id', function(req,res) {
   var response = {"requirements": ""};
   console.log(console.log(req.params.id));
   if(req.params.id in students) {
-    response["requirements"] = students[req.params.id].requirements;
+    response["requirements"] = ''+students[req.params.id].requirements;
+    response["allrequirements"] = ''+allrequirements;
     response["getStatus"] = "1";
   } else {
     response["getStatus"] = "0";
@@ -245,18 +465,14 @@ server.get('/studentrequirements/:id', function(req,res) {
 server.post('/updaterequirements', function(req,res) {
   var response = {};
   if(req.body.userId in students) {
-    if(students[req.body.userId].requirements.localeCompare("") == 0) {
-      students[req.body.userId].requirements = req.body.requirements
-    } else {
-      students[req.body.userId].requirements = req.body.requirements;
-    }
+    students[req.body.userId].requirements = req.body.requirements;
     console.log(students[req.body.userId].requirements)
     response["updateStatus"] = "1"
   } else {
     response["updateStatus"] = "0"
   }
   console.log('/updaterequirements request made')
-  console.log(res['updateStatus'])
+  console.log(response['updateStatus'])
   console.log(req.body.requirements)
 
   res.header("Content-Type",'application/json');
@@ -268,18 +484,9 @@ server.get('/searchforexperiments/:userId', function(req,res){
   var found = false;
   if(req.params.userId in students) {
     for(experiment in experiments) {
-      if(listcontains(experiments[experiment].requirements.split(','), students[req.params.userId].requirements.split(',')) && !found && (experiments[experiment].maxParticipants > experiments[experiment].participants.length)){
-        response["expname"] = ""+experiments[experiment].expname
-        response["time"] = ""+experiments[experiment].time
-        response["explocation"] = ""+experiments[experiment].explocation
-        response["descript"] = ""+experiments[experiment].descript
-        response["objective"] = ""+experiments[experiment].objective
-        response["maxParticipants"] = ""+experiments[experiment].maxParticipants
-        response["requirements"] = ""+experiments[experiment].requirements
-        response["expid"] = ""+experiment
-	      response["authorId"] = ""+experiments[experiment].authorId
-        response["searchStatus"] = '1'
-	      response["author"] = teachers[experiments[experiment].authorId].username+""
+      if(listcontains(experiments[experiment].requirements.split(','), students[req.params.userId].requirements.split(',')) && !found && (experiments[experiment].maxParticipants > experiments[experiment].participants.length) && (experiments[experiment].participants.indexOf(req.params.userId) < 0) && teachers[experiments[experiment].authorId].university.localeCompare(students[req.params.userId].university)==0){
+        addExperimentToResponse(response,experiments[experiment],"");
+        response['searchStatus'] = '1';
         found = true;
       }
     }
@@ -297,12 +504,147 @@ server.post('/participate', function(req,res) {
   var response = {};
   if(data.expid in experiments && data.userId in students) {
     experiments[data.expid].participants.push(data.userId);
-    students[data.userId].experiments.push(data.expid)
+    students[data.userId].experiments.push(data.expid);
     response["participateStatus"] = "1";
   } else {
     response["participateStatus"] = "0";
   }
   console.log(response)
+  res.header("Content-Type",'application/json');
+  res.send(JSON.stringify(response, null, 4));
+})
+
+server.get('/credits/:uniname', function(req,res) {
+  var response = {'getStatus': '0'};
+  if(req.params.uniname in uniadmins) {
+    response['getStatus'] = '1';
+    response['pertime'] = admins[uniadmins[req.params.uniname]].pertime+"";
+    response['required'] = admins[uniadmins[req.params.uniname]].required+"";
+    response['penalty'] = admins[uniadmins[req.params.uniname]].penalty+"";
+  }
+  console.log(response);
+  res.header("Content-Type",'application/json');
+  res.send(JSON.stringify(response, null, 4));
+})
+
+server.post('/updatecredits', function(req,res) {
+  var response = {'updateStatus': '0'};
+  if(req.body.userId in admins) {
+    admins[req.body.userId].penalty = Number(req.body.penalty);
+    admins[req.body.userId].pertime = Number(req.body.pertime);
+    admins[req.body.userId].required = Number(req.body.required);
+    response['updateStatus'] = '1';
+  }
+  console.log(response);
+  res.header("Content-Type",'application/json');
+  res.send(JSON.stringify(response, null, 4));
+})
+
+server.post('/gradestudents', function(req,res) {
+  var response = {'gradeStatus': '0'};
+  var passedids = [];
+  if(notEmpty(req.body.passedids)){
+    passedids = req.body.passedids.split(',');
+  }
+  var failedids = [];
+  if(notEmpty(req.body.failedids)){
+    failedids = req.body.failedids.split(',');
+  }
+  if(req.body.expid in experiments) {
+    experiments[req.body.expid].open = false;
+  }
+  for(var studentIdIndex in passedids) {
+    var studentId = passedids[studentIdIndex];
+    if(studentId in students) {
+      if(students[studentId].experiments.indexOf(req.body.expid) >= 0) {
+        students[studentId].gradedExperiments[req.body.expid] = Number(experiments[req.body.expid].credit);
+        students[studentId].experiments = removeFromArr(students[studentId].experiments, req.body.expid);
+        response['gradeStatus'] = '1';
+      }
+    }
+  }
+  for(var studentIdIndex in failedids) {
+    var studentId = failedids[studentIdIndex];
+    if(studentId in students) {
+      if(students[studentId].experiments.indexOf(req.body.expid) >= 0) {
+        students[studentId].gradedExperiments[req.body.expid] = Number(admins[uniadmins[students[studentId].university]].penalty);
+        students[studentId].experiments = removeFromArr(students[studentId].experiments, req.body.expid);
+        response['gradeStatus'] = '1';
+      }
+    }
+  }
+  console.log(response);
+  res.header("Content-Type",'application/json');
+  res.send(JSON.stringify(response, null, 4));
+})
+
+server.get('/participants/:expid', function(req,res) {
+  var response = {'getStatus': '0'};
+  if(req.params.expid in experiments) {
+    response['getStatus'] = '1';
+    if(notEmpty(experiments[req.params.expid].participants)) {
+      for(studentId in experiments[req.params.expid].participants.split(',').filter(notEmpty)) {
+        var counter = 0;
+        if(studentId in students) {
+          response = addUserToResponse(response, students[studentId], counter);
+          counter = counter + 1;
+        }
+      }
+    }
+  }
+  res.header("Content-Type",'application/json');
+  res.send(JSON.stringify(response, null, 4));
+})
+
+server.post('/sendmessage', function(req,res) {
+  var response = {'sendStatus': '0'};
+  if(req.body.authorId in teachers) {
+    if(req.body.recieverId in students) {
+      students[req.body.recieverId].messages.push(new Message(req.body.authorId,req.body.message));
+      response['sendStatus'] = '1';
+    }
+  }
+
+  if(req.body.authorId in students) {
+    if(req.body.recieverId in teachers) {
+      teachers[req.body.recieverId].messages.push(new Message(req.body.authorId,req.body.message));
+      response['sendStatus'] = '1';
+    }
+  }
+
+  res.header("Content-Type",'application/json');
+  res.send(JSON.stringify(response, null, 4));
+})
+
+server.get('/messages/:userId', function(req,res) {
+  var response = {'getStatus': '0'};
+  if(req.params.userId in teachers) {
+    if(teachers[req.params.userId].messages.length > 0) {
+      var counter = 0;
+      for(message in teachers[req.params.userId].messages) {
+        response[counter+"author"] = ""+students[teachers[req.params.userId].messages[message].author].username;
+        response[counter+"message"] = ""+teachers[req.params.userId].messages[message].text;
+        response[counter+"authorId"] = ""+teachers[req.params.userId].messages[message].author;
+        counter = counter + 1;
+      }
+      response['getStatus'] = '1';
+    }
+  }
+
+  if(req.params.userId in students) {
+    if(students[req.params.userId].messages.length > 0) {
+      var counter = 0;
+      for(message in students[req.params.userId].messages) {
+        response[counter+"author"] = ""+teachers[students[req.params.userId].messages[message].author].username;
+        response[counter+"message"] = ""+students[req.params.userId].messages[message].text;
+        response[counter+"authorId"] = ""+students[req.params.userId].messages[message].author;
+        counter = counter + 1;
+      }
+      response['getStatus'] = '1';
+    }
+  }
+
+  res.header("Content-Type",'application/json');
   res.send(JSON.stringify(response, null, 4));
 })
 
